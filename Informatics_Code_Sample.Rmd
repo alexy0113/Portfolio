@@ -1,0 +1,4776 @@
+---
+title: "Basic Questions For Curated and Collated SCFA Data"
+author: "Alex Yang"
+date: "9/21/2020"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+#Loading Appropriate Packages 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library('dplyr')
+library('tidyverse')
+library('ggplot2')
+library('scales')
+library('ggpubr')
+```
+
+```{r}
+#Always Account for Working Directory
+getwd()
+```
+
+#-------------------------------------------------------------------------------
+
+#SCFA vs. PH
+##SCFA vs. PH for Week 1 and Week 3 (Participants Averaged)
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+fecal_clean <- fullfecalsample %>%
+  na.omit() %>%
+  filter(Week == "week1" | Week == "week3") %>%
+  mutate(scfa_sum = rowSums(.[6:8])) 
+#Preparing Data for Scatterplot Creation 
+fecal_clean$pH = as.numeric(fecal_clean$pH)
+fecal_clean$scfa_sum = as.numeric(fecal_clean$scfa_sum)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean, aes(x=pH, y=scfa_sum)) +
+  geom_point(alpha=0.3) +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean, aes(x=pH, y=scfa_sum)) +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean, aes(x=pH, y=scfa_sum)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean$pH), as.vector(fecal_clean$scfa_sum),
+    method = "pearson") #Returns -0.1326739. Low negative correlation 
+
+#Significance Statistics
+qqplot(as.vector(fecal_clean$pH), as.vector(fecal_clean$scfa_sum))
+bartlett.test(scfa_sum ~ Week, data = fecal_clean)
+cor.test(as.vector(fecal_clean$pH), as.vector(fecal_clean$scfa_sum), 
+         alternative = "less", method = 'pearson')
+```
+
+##SCFA vs. PH for Week 1 and Week 3 (Participants Unaveraged)
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample_unaveraged <- read.csv("./fecalsample_ua.csv")
+fecal_clean_ua <- fullfecalsample_unaveraged %>%
+  na.omit() %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH"),
+         starts_with("Acetate_mmol_kg"),
+         starts_with("Butyrate_mmol_kg"),
+         starts_with("Propionate_mmol_kg")) %>%
+  filter(Week == "week1" | Week == "week3") %>%
+  mutate(scfa_sum = rowSums(.[4:6])) 
+
+#Preparing Data for Scatterplot Creation 
+fecal_clean_ua$pH = as.numeric(fecal_clean_ua$pH)
+fecal_clean_ua$scfa_sum = as.numeric(fecal_clean_ua$scfa_sum)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean_ua, aes(x=pH, y=scfa_sum)) +
+  geom_point(alpha=0.3) +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean_ua, aes(x=pH, y=scfa_sum)) +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean_ua, aes(x=pH, y=scfa_sum)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean_ua$pH), as.vector(fecal_clean_ua$scfa_sum),
+    method = "pearson") #Returns -0.1765633. Low negative correlation
+
+#Significance Statistics
+qqplot(as.vector(fecal_clean_ua$pH), as.vector(fecal_clean_ua$scfa_sum))
+bartlett.test(scfa_sum ~ Week, data = fecal_clean_ua)
+cor.test(as.vector(fecal_clean_ua$pH), as.vector(fecal_clean_ua$scfa_sum), 
+         alternative = "less", method = 'pearson')
+```
+
+##SCFA vs. PH for Week 1 Only (Participants Averaged)
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+fecal_clean1 <- fullfecalsample %>%
+  na.omit() %>%
+  filter(Week == "week1") %>%
+  mutate(scfa_sum = rowSums(.[6:8])) 
+
+#Preparing Data for Scatterplot Creation 
+fecal_clean1$pH = as.numeric(fecal_clean1$pH)
+fecal_clean1$scfa_sum = as.numeric(fecal_clean1$scfa_sum)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean1, aes(x=pH, y=scfa_sum)) +
+  geom_point(alpha=0.3) +
+  ggtitle("SCFA vs. PH for Week 1") +
+  labs(y= "Total SCFA", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean1, aes(x=pH, y=scfa_sum)) +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for Week 1") +
+  labs(y= "Total SCFA", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean1, aes(x=pH, y=scfa_sum)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for Week 1") +
+  labs(y= "Total SCFA", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean1$pH), as.vector(fecal_clean1$scfa_sum),
+    method = "pearson") #Returns -0.1444287. Negative correlation
+
+#Significance Statistics
+cor.test(as.vector(fecal_clean1$pH), as.vector(fecal_clean1$scfa_sum), 
+         alternative = "less", method = 'pearson')
+```
+
+##SCFA vs. PH for Week 1 Only (Participants Unaveraged)
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample_unaveraged <- read.csv("./fecalsample_ua.csv")
+fecal_clean_ua <- fullfecalsample_unaveraged %>%
+  na.omit() %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH"),
+         starts_with("Acetate_mmol_kg"),
+         starts_with("Butyrate_mmol_kg"),
+         starts_with("Propionate_mmol_kg")) %>%
+  filter(Week == "week1") %>%
+  mutate(scfa_sum = rowSums(.[4:6]))
+
+#Preparing Data for Scatterplot Creation 
+fecal_clean_ua$pH = as.numeric(fecal_clean_ua$pH)
+fecal_clean_ua$scfa_sum = as.numeric(fecal_clean_ua$scfa_sum)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean_ua, aes(x=pH, y=scfa_sum)) +
+  geom_point(alpha=0.3) +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean_ua, aes(x=pH, y=scfa_sum)) +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean_ua, aes(x=pH, y=scfa_sum)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean_ua$pH), as.vector(fecal_clean_ua$scfa_sum),
+    method = "pearson") #Returns -0.1765633. Low negative correlation
+
+#Significance Statistics
+qqplot(as.vector(fecal_clean_ua$pH), as.vector(fecal_clean_ua$scfa_sum))
+cor.test(as.vector(fecal_clean_ua$pH), as.vector(fecal_clean_ua$scfa_sum), 
+         alternative = "less", method = 'pearson')
+```
+
+
+##SCFA vs. PH for Week 3 Only (Participants Averaged)
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+fecal_clean3 <- fullfecalsample %>%
+  na.omit() %>%
+  filter(Week == "week3") %>%
+  mutate(scfa_sum = rowSums(.[6:8]))
+
+#Preparing Data for Scatterplot Creation 
+fecal_clean3$pH = as.numeric(fecal_clean3$pH)
+fecal_clean3$scfa_sum = as.numeric(fecal_clean3$scfa_sum)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean3, aes(x=pH, y=scfa_sum)) +
+  geom_point(alpha=0.3) +
+  ggtitle("SCFA vs. PH for Week 3") +
+  labs(y= "Total SCFA", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean3, aes(x=pH, y=scfa_sum)) +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for Week 3") +
+  labs(y= "Total SCFA", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean3, aes(x=pH, y=scfa_sum)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for Week 3") +
+  labs(y= "Total SCFA", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean3$pH), as.vector(fecal_clean3$scfa_sum),
+    method = "pearson") #Returns -0.1104008. Very low negative correlation.
+
+#Significance Statistics
+cor.test(as.vector(fecal_clean3$pH), as.vector(fecal_clean3$scfa_sum), 
+         alternative = "less", method = 'pearson')
+```
+
+##SCFA vs. PH for Week 3 Only (Participants Unaveraged)
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample_unaveraged <- read.csv("./fecalsample_ua.csv")
+fecal_clean_ua <- fullfecalsample_unaveraged %>%
+  na.omit() %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH"),
+         starts_with("Acetate_mmol_kg"),
+         starts_with("Butyrate_mmol_kg"),
+         starts_with("Propionate_mmol_kg")) %>%
+  filter(Week == "week3") %>%
+  mutate(scfa_sum = rowSums(.[4:6]))
+
+#Preparing Data for Scatterplot Creation 
+fecal_clean_ua$pH = as.numeric(fecal_clean_ua$pH)
+fecal_clean_ua$scfa_sum = as.numeric(fecal_clean_ua$scfa_sum)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean_ua, aes(x=pH, y=scfa_sum)) +
+  geom_point(alpha=0.3) +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean_ua, aes(x=pH, y=scfa_sum)) +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean_ua, aes(x=pH, y=scfa_sum)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("SCFA vs. PH for All Weeks") +
+  labs(y= "Total SCFA", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean_ua$pH), as.vector(fecal_clean_ua$scfa_sum),
+    method = "pearson") #Returns -0.1765633. Low negative correlation
+
+#Significance Statistics
+qqplot(as.vector(fecal_clean_ua$pH), as.vector(fecal_clean_ua$scfa_sum))
+cor.test(as.vector(fecal_clean_ua$pH), as.vector(fecal_clean_ua$scfa_sum), 
+         alternative = "less", method = 'pearson')
+```
+
+#-------------------------------------------------------------------------------
+
+#BRMPS 2x Daily Cohort 
+##Acetate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+View(fullfecalsample)
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+View(participantsupps1)
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk1 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk3 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diff <- acetate_brmps %>%
+  mutate(acetate_diff = acetate.wk3 - acetate.wk1) %>%
+  arrange(by = acetate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vec <- as.vector(acetate_brmps$acetate.wk1)
+acetate_wk3_vec <- as.vector(acetate_brmps$acetate.wk3)
+paired_acetate_df <- data.frame(Week1 = acetate_wk1_vec, Week3 = acetate_wk3_vec)
+acetatepairplot <- ggpaired(paired_acetate_df, cond1 = "Week1", cond2 = "Week3")
+acetatepairplot$layers <- acetatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmps$acetate.wk1), 
+       as.vector(acetate_brmps$acetate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diff)
+acetatepairplot
+acebrmps1x_barplot <- barplot(acetate_brmps_diff$acetate_diff, ylab = "Participants", xlab = "Acet. Conc. Change (Week 3 - Week 1)", 
+        main = "BRMPS 2x Daily Acetate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diff)
+```
+
+##Acetate Proportion in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop1 = Acetate_mmol_kg / scfa_sum) 
+View(fullfecalsample)
+
+fecal1_brmpsprop <- merge(fecal1_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk1 = acetate_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop3 = Acetate_mmol_kg / scfa_sum) 
+
+fecal3_brmpsprop <- merge(fecal3_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk3 = acetate_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmpsprop <- merge(fecal1_brmpsprop,fecal3_brmpsprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diffprop <- acetate_brmpsprop %>%
+  mutate(acetate_prop_diff = acetate_prop_wk3 - acetate_prop_wk1) %>%
+  arrange(by = acetate_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk1)
+acetate_wk3_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk3)
+paired_acetate_dfprop <- data.frame(Week1 = acetate_wk1_vecprop, 
+                                    Week3 = acetate_wk3_vecprop)
+acetatepairplotprop <- ggpaired(paired_acetate_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+acetatepairplotprop$layers <- acetatepairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmpsprop$acetate_prop_wk1), 
+       as.vector(acetate_brmpsprop$acetate_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diffprop) # p-value = 0.0971. 
+acetatepairplotprop
+aceprop1x_barplot <- barplot(acetate_brmps_diffprop$acetate_prop_diff, ylab = "Participants", xlab = "Acetate Prop. Change (Week 3 - Week 1)", 
+        main = "BRMPS 2x Daily Ace. Prop. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diffprop)
+```
+
+##Butyrate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") 
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk1 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("butyrate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk3 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("butyrate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+butyrate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round) 
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+butyrate_brmps_diff <- butyrate_brmps %>%
+  mutate(butyrate_diff = butyrate.wk3 - butyrate.wk1) %>%
+  arrange(by = butyrate_diff)
+
+butyrate_brmps_diff <- butyrate_brmps_diff[-c(86, 87, 88), ]
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+butyrate_wk1_vec <- as.vector(butyrate_brmps$butyrate.wk1)
+butyrate_wk3_vec <- as.vector(butyrate_brmps$butyrate.wk3)
+paired_butyrate_df <- data.frame(Week1 = butyrate_wk1_vec, Week3 = butyrate_wk3_vec)
+butyratepairplot <- ggpaired(paired_butyrate_df, cond1 = "Week1", cond2 = "Week3")
+butyratepairplot$layers <- butyratepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(butyrate_brmps_diff$butyrate.wk1), 
+       as.vector(butyrate_brmps_diff$butyrate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(butyrate_brmps_diff)
+butyratepairplot
+butbrmps1x_barplot <- barplot(butyrate_brmps_diff$butyrate_diff, ylab = "Participants", xlab = "Butyr. Conc. Change (Week 3 - Week 1)", 
+        main = "BRMPS 2x Daily Butyrate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(butyrate_brmps_diff)
+```
+
+##Propionate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk1 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("propionate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week3") %>%
+  na.omit()
+
+fecal3_brmps <- merge(fecal3_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk3 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("propionate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+propionate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+propionate_brmps_diff <- propionate_brmps %>%
+  mutate(propionate_diff = propionate.wk3 - propionate.wk1) %>%
+  arrange(by = propionate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+propionate_wk1_vec <- as.vector(propionate_brmps$propionate.wk1)
+propionate_wk3_vec <- as.vector(propionate_brmps$propionate.wk3)
+paired_propionate_df <- data.frame(Week1 = propionate_wk1_vec, Week3 = propionate_wk3_vec)
+propionatepairplot <- ggpaired(paired_propionate_df, cond1 = "Week1", cond2 = "Week3")
+propionatepairplot$layers <- propionatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(propionate_brmps$propionate.wk1), 
+       as.vector(propionate_brmps$propionate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(propionate_brmps_diff)
+propionatepairplot
+probrmps1x_barplot <- barplot(propionate_brmps_diff$propionate_diff, ylab = "Participants", xlab = "Propio. Conc. Change (Week 3 - Week 1)", 
+        main = "BRMPS 1x Daily Propionate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(propionate_brmps_diff)
+```
+##Prop+But Proportion (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_bpprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(bp_prop1 = (Butyrate_mmol_kg+Propionate_mmol_kg) / scfa_sum) 
+#View(fullfecalsample)
+
+fecal1_brmpsprop <- merge(fecal1_bpprop,participantsupps1,by="Participant") %>%
+  rename(bp_prop_wk1 = bp_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("bp_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_bpprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(bp_prop3 = (Butyrate_mmol_kg+Propionate_mmol_kg) / scfa_sum) 
+
+fecal3_brmpsprop <- merge(fecal3_bpprop,participantsupps1,by="Participant") %>%
+  rename(bp_prop_wk3 = bp_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("bp_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+bp_brmpsprop <- merge(fecal1_brmpsprop,fecal3_brmpsprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+bp_brmps_diffprop <- bp_brmpsprop %>%
+  mutate(bp_prop_diff = bp_prop_wk3 - bp_prop_wk1) %>%
+  arrange(by = bp_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+bp_wk1_vecprop <- as.vector(bp_brmps_diffprop$bp_prop_wk1)
+bp_wk3_vecprop <- as.vector(bp_brmps_diffprop$bp_prop_wk3)
+paired_bp_dfprop <- data.frame(Week1 = bp_wk1_vecprop, 
+                                    Week3 = bp_wk3_vecprop)
+bppairplotprop <- ggpaired(paired_bp_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+bppairplotprop$layers <- bppairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(bp_brmpsprop$bp_prop_wk1), 
+       as.vector(bp_brmpsprop$bp_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(bp_brmps_diffprop) # p-value = 0.0971. 
+bppairplotprop
+bpprop1x_barplot <- barplot(bp_brmps_diffprop$bp_prop_diff, ylab = "Participants", xlab = "BP Prop. Change (Week 3 - Week 1)", 
+        main = "BRMPS 2x Daily BP. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(bp_brmps_diffprop)
+```
+
+##Total SCFA Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_total,participantsupps1,by="Participant") %>%
+  rename(total.wk1 = scfa_sum) %>%
+  select(starts_with("Participant"),
+        starts_with("total"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_total,participantsupps1,by="Participant") %>%
+  rename(total.wk3 = scfa_sum) %>%
+  select(starts_with("Participant"),
+         starts_with("total"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+total_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+total_brmps_diff <- total_brmps %>%
+  mutate(total_diff = total.wk3 - total.wk1) %>%
+  arrange(by = total_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+total_wk1_vec <- as.vector(total_brmps$total.wk1)
+total_wk3_vec <- as.vector(total_brmps$total.wk3)
+paired_total_df <- data.frame(Week1 = total_wk1_vec, Week3 = total_wk3_vec)
+totalpairplot <- ggpaired(paired_total_df, cond1 = "Week1", cond2 = "Week3")
+totalpairplot$layers <- totalpairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(total_brmps$total.wk1), 
+       as.vector(total_brmps$total.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(total_brmps_diff)
+totalpairplot
+totbrmps1x_barplot <- barplot(total_brmps_diff$total_diff, ylab = "Participants", xlab = "Total Conc. Change (Week 3 - Week 1)", 
+        main = "BRMPS 2x Daily Total Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(total_brmps_diff)
+```
+
+##pH Change in BRMPS 2x Cohort from Week 1 to Week 3
+```{r}
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") %>%
+  rename(Participant = Name) %>%
+  filter(Supplement.consumed == "BRMPS 2xdaily 20")
+
+#Making Week 1 BRMPS 2x-pH Data Frame 
+ph_brmps_wk1 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  rename(ph.wk1 = pH)
+
+#Making Week 3 BRMPS 2x-pH Data Frame 
+ph_brmps_wk3 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  rename(ph.wk3 = pH)
+
+#Combining Week 1 and Week 3 BRMPS 2x Daily Cohort 
+merged_ph_wks <- merge(ph_brmps_wk1, ph_brmps_wk3, by = "Participant") %>%
+  select(-starts_with("Week"))
+merged_ph_brmps<- merge(merged_ph_wks, participantsupps1, by = "Participant")
+merged_ph_brmps <- merged_ph_brmps %>%
+  select(starts_with("Participant"), starts_with("ph.wk")) %>%
+  mutate(ph.diff = ph.wk3 - ph.wk1) %>%
+  arrange(by_group = ph.diff)
+
+#Summary Statistics and Visualizations for BRMPS 2x Daily pH Change
+nrow(merged_ph_brmps) 
+t.test(as.vector(merged_ph_brmps$ph.wk1), 
+       as.vector(merged_ph_brmps$ph.wk3),
+       alternative = "greater",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(merged_ph_brmps)
+ph_brmps1x_barplot <- barplot(merged_ph_brmps$ph.diff, ylab = "Participants", 
+        xlab = "pH (Week 3 - Week 1)", 
+        main = "BRMPS 2x Daily pH Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(merged_ph_brmps)
+```
+
+#-------------------------------------------------------------------------------
+
+#BRMPS 1x Daily Cohort 
+##Acetate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+    filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "BRMPS 1xdaily 40") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk1 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("acetate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk3 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diff <- acetate_brmps %>%
+  mutate(acetate_diff = acetate.wk3 - acetate.wk1) %>%
+  arrange(by = acetate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vec <- as.vector(acetate_brmps$acetate.wk1)
+acetate_wk3_vec <- as.vector(acetate_brmps$acetate.wk3)
+paired_acetate_df <- data.frame(Week1 = acetate_wk1_vec, Week3 = acetate_wk3_vec)
+acetatepairplot <- ggpaired(paired_acetate_df, cond1 = "Week1", cond2 = "Week3")
+acetatepairplot$layers <- acetatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmps$acetate.wk1), 
+       as.vector(acetate_brmps$acetate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diff)
+acetatepairplot
+acebrmps1x_barplot <- barplot(acetate_brmps_diff$acetate_diff, ylab = "Participants", xlab = "Acet. Conc. Change (Week 3 - Week 1)", 
+        main = "BRMPS 1x Daily Acetate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diff)
+```
+
+##Acetate Proportion in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+    filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "BRMPS 1xdaily 40") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop1 = Acetate_mmol_kg / scfa_sum) 
+
+fecal1_brmpsprop <- merge(fecal1_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk1 = acetate_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop3 = Acetate_mmol_kg / scfa_sum) 
+
+fecal3_brmpsprop <- merge(fecal3_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk3 = acetate_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmpsprop <- merge(fecal1_brmpsprop,fecal3_brmpsprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diffprop <- acetate_brmpsprop %>%
+  mutate(acetate_prop_diff = acetate_prop_wk3 - acetate_prop_wk1) %>%
+  arrange(by = acetate_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk1)
+acetate_wk3_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk3)
+paired_acetate_dfprop <- data.frame(Week1 = acetate_wk1_vecprop, 
+                                    Week3 = acetate_wk3_vecprop)
+acetatepairplotprop <- ggpaired(paired_acetate_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+acetatepairplotprop$layers <- acetatepairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmpsprop$acetate_prop_wk1), 
+       as.vector(acetate_brmpsprop$acetate_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diffprop) # p-value = 0.0971. 
+acetatepairplotprop
+aceprop1x_barplot <- barplot(acetate_brmps_diffprop$acetate_prop_diff, ylab = "Participants", xlab = "Acetate Prop. Change (Week 3 - Week 1)", 
+        main = "BRMPS 1x Daily Ace. Prop. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diffprop)
+```
+
+##Butyrate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+    filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "BRMPS 1xdaily 40") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk1 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("butyrate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk3 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("butyrate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+butyrate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+butyrate_brmps_diff <- butyrate_brmps %>%
+  mutate(butyrate_diff = butyrate.wk3 - butyrate.wk1) %>%
+  arrange(by = butyrate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+butyrate_wk1_vec <- as.vector(butyrate_brmps$butyrate.wk1)
+butyrate_wk3_vec <- as.vector(butyrate_brmps$butyrate.wk3)
+paired_butyrate_df <- data.frame(Week1 = butyrate_wk1_vec, Week3 = butyrate_wk3_vec)
+butyratepairplot <- ggpaired(paired_butyrate_df, cond1 = "Week1", cond2 = "Week3")
+butyratepairplot$layers <- butyratepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(butyrate_brmps$butyrate.wk1), 
+       as.vector(butyrate_brmps$butyrate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(butyrate_brmps_diff)
+butyratepairplot
+butbrmps1x_barplot <- barplot(butyrate_brmps_diff$butyrate_diff, ylab = "Participants", xlab = "Butyr. Conc. Change (Week 3 - Week 1)", 
+        main = "BRMPS 1x Daily Butyrate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(butyrate_brmps_diff)
+```
+
+##Propionate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+    filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "BRMPS 1xdaily 40") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk1 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("propionate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week3") %>%
+  na.omit()
+
+fecal3_brmps <- merge(fecal3_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk3 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("propionate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+propionate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+propionate_brmps_diff <- propionate_brmps %>%
+  mutate(propionate_diff = propionate.wk3 - propionate.wk1) %>%
+  arrange(by = propionate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+propionate_wk1_vec <- as.vector(propionate_brmps$propionate.wk1)
+propionate_wk3_vec <- as.vector(propionate_brmps$propionate.wk3)
+paired_propionate_df <- data.frame(Week1 = propionate_wk1_vec, Week3 = propionate_wk3_vec)
+propionatepairplot <- ggpaired(paired_propionate_df, cond1 = "Week1", cond2 = "Week3")
+propionatepairplot$layers <- propionatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(propionate_brmps$propionate.wk1), 
+       as.vector(propionate_brmps$propionate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(propionate_brmps_diff)
+propionatepairplot
+probrmps1x_barplot <- barplot(propionate_brmps_diff$propionate_diff, ylab = "Participants", xlab = "Propio. Conc. Change (Week 3 - Week 1)", 
+        main = "BRMPS 1x Daily Propionate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(propionate_brmps_diff)
+```
+
+##Total SCFA Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+    filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "BRMPS 1xdaily 40") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_total,participantsupps1,by="Participant") %>%
+  rename(total.wk1 = scfa_sum) %>%
+  select(starts_with("Participant"),
+        starts_with("total"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_total,participantsupps1,by="Participant") %>%
+  rename(total.wk3 = scfa_sum) %>%
+  select(starts_with("Participant"),
+         starts_with("total"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+total_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+total_brmps_diff <- total_brmps %>%
+  mutate(total_diff = total.wk3 - total.wk1) %>%
+  arrange(by = total_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+total_wk1_vec <- as.vector(total_brmps$total.wk1)
+total_wk3_vec <- as.vector(total_brmps$total.wk3)
+paired_total_df <- data.frame(Week1 = total_wk1_vec, Week3 = total_wk3_vec)
+totalpairplot <- ggpaired(paired_total_df, cond1 = "Week1", cond2 = "Week3")
+totalpairplot$layers <- totalpairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(total_brmps$total.wk1), 
+       as.vector(total_brmps$total.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(total_brmps_diff)
+totalpairplot
+totbrmps1x_barplot <- barplot(total_brmps_diff$total_diff, ylab = "Participants", xlab = "Total Conc. Change (Week 3 - Week 1)", 
+        main = "BRMPS 1x Daily Total Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(total_brmps_diff)
+```
+
+##pH Change in BRMPS 1x Cohort from Week 1 to Week 3
+```{r}
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") %>%
+  rename(Participant = Name) %>%
+  filter(Supplement.consumed == "BRMPS 1xdaily 40")
+
+#Making Week 1 BRMPS 1x-pH Data Frame 
+ph_brmps_wk1 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  rename(ph.wk1 = pH)
+
+#Making Week 3 BRMPS 1x-pH Data Frame 
+ph_brmps_wk3 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  rename(ph.wk3 = pH)
+
+#Combining Week 1 and Week 3 BRMPS 1x Daily Cohort 
+merged_ph_wks <- merge(ph_brmps_wk1, ph_brmps_wk3, by = "Participant") 
+merged_ph_brmps<- merge(merged_ph_wks, participantsupps1, by = "Participant")
+merged_ph_brmps <- merged_ph_brmps %>%
+  select(starts_with("Participant"), starts_with("ph.wk")) %>%
+  mutate(ph.diff = ph.wk3 - ph.wk1) %>%
+  arrange(by_group = ph.diff)
+
+#Summary Statistics and Visualizations for BRMPS 1x Daily pH Change
+nrow(merged_ph_brmps) 
+t.test(as.vector(merged_ph_brmps$ph.wk1), 
+       as.vector(merged_ph_brmps$ph.wk3),
+       alternative = "greater",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(merged_ph_brmps)
+ph_brmps1x_barplot <- barplot(merged_ph_brmps$ph.diff, ylab = "Participants", 
+        xlab = "pH (Week 3 - Week 1)", 
+        main = "BRMPS 1x Daily pH Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(merged_ph_brmps)
+```
+
+#-------------------------------------------------------------------------------
+
+#No Supplement Cohort 
+##Acetate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily None Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Supplement.consumed == "none") %>%
+  rename(Participant = Name)
+
+
+#Making Week 1 Data Frame from None and Acetate
+fecal1_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_none <- merge(fecal1_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk1 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("acetate"))
+
+#Making Week 3 Data Frame from None and Acetate
+fecal3_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week3") %>%
+  na.omit()
+
+fecal3_none <- merge(fecal3_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk3 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Combining Week 1 and Week 3 None-Acetate DFs for Larger DF
+acetate_none <- merge(fecal1_none,fecal3_none,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-None df in form: week3-week1
+acetate_none_diff <- acetate_none %>%
+  mutate(acetate_diff = acetate.wk3 - acetate.wk1) %>%
+  arrange(by = acetate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 None-Acetate Data
+acetate_wk1_vec <- as.vector(acetate_none$acetate.wk1)
+acetate_wk3_vec <- as.vector(acetate_none$acetate.wk3)
+paired_acetate_df <- data.frame(Week1 = acetate_wk1_vec, Week3 = acetate_wk3_vec)
+acetatepairplot <- ggpaired(paired_acetate_df, cond1 = "Week1", cond2 = "Week3")
+acetatepairplot$layers <- acetatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 None-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_none$acetate.wk1), 
+       as.vector(acetate_none$acetate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_none_diff)
+acetatepairplot
+acebrmps1x_barplot <- barplot(acetate_none_diff$acetate_diff, ylab = "Participants", xlab = "Acet. Conc. Change (Week 3 - Week 1)", 
+        main = "No Supp. Daily Acetate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_none_diff)
+```
+
+##Butyrate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily None Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Supplement.consumed == "none") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from None and Acetate
+fecal1_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week1") %>%
+  na.omit()
+
+fecal1_none <- merge(fecal1_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk1 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("butyrate"))
+
+#Making Week 3 Data Frame from None and Acetate
+fecal3_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_none <- merge(fecal3_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk3 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("butyrate"))
+
+#Combining Week 1 and Week 3 None-Acetate DFs for Larger DF
+butyrate_none <- merge(fecal1_none,fecal3_none,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-None df in form: week3-week1
+butyrate_none_diff <- butyrate_none %>%
+  mutate(butyrate_diff = butyrate.wk3 - butyrate.wk1) %>%
+  arrange(by = butyrate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 None-Acetate Data
+butyrate_wk1_vec <- as.vector(butyrate_none$butyrate.wk1)
+butyrate_wk3_vec <- as.vector(butyrate_none$butyrate.wk3)
+paired_butyrate_df <- data.frame(Week1 = butyrate_wk1_vec, Week3 = butyrate_wk3_vec)
+butyratepairplot <- ggpaired(paired_butyrate_df, cond1 = "Week1", cond2 = "Week3")
+butyratepairplot$layers <- butyratepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 None-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(butyrate_none$butyrate.wk1), 
+       as.vector(butyrate_none$butyrate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(butyrate_none_diff)
+butyratepairplot
+butbrmps1x_barplot <- barplot(butyrate_none_diff$butyrate_diff, ylab = "Participants", xlab = "But. Conc. Change (Week 3 - Week 1)", 
+        main = "No Supp. Daily Butyrate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(butyrate_none_diff)
+```
+
+##Propionate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily None Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Supplement.consumed == "none") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from None and Acetate
+fecal1_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week1") %>%
+  na.omit()
+
+fecal1_none <- merge(fecal1_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk1 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("propionate"))
+
+#Making Week 3 Data Frame from None and Acetate
+fecal3_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_none <- merge(fecal3_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk3 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("propionate"))
+
+#Combining Week 1 and Week 3 None-Acetate DFs for Larger DF
+propionate_none <- merge(fecal1_none,fecal3_none,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-None df in form: week3-week1
+propionate_none_diff <- propionate_none %>%
+  mutate(propionate_diff = propionate.wk3 - propionate.wk1) %>%
+  arrange(by = propionate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 None-Acetate Data
+propionate_wk1_vec <- as.vector(propionate_none$propionate.wk1)
+propionate_wk3_vec <- as.vector(propionate_none$propionate.wk3)
+paired_propionate_df <- data.frame(Week1 = propionate_wk1_vec, Week3 = propionate_wk3_vec)
+propionatepairplot <- ggpaired(paired_propionate_df, cond1 = "Week1", cond2 = "Week3")
+propionatepairplot$layers <- propionatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 None-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(propionate_none$propionate.wk1), 
+       as.vector(propionate_none$propionate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(propionate_none_diff)
+propionatepairplot
+probrmps1x_barplot <- barplot(propionate_none_diff$propionate_diff, ylab = "Participants", xlab = "Pro. Conc. Change (Week 3 - Week 1)", 
+        main = "No Supp. Daily Propionate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(propionate_none_diff)
+```
+
+##Total SCFA Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and None Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Supplement.consumed == "none") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from None and Acetate
+fecal1_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_none <- merge(fecal1_total,participantsupps1,by="Participant") %>%
+  rename(total.wk1 = scfa_sum) %>%
+  select(starts_with("Participant"),
+         starts_with("total"))
+
+#Making Week 3 Data Frame from None and Acetate
+fecal3_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_none <- merge(fecal3_total,participantsupps1,by="Participant") %>%
+  rename(total.wk3 = scfa_sum) %>%
+  select(starts_with("Participant"),
+         starts_with("total"))
+
+#Combining Week 1 and Week 3 None-Acetate DFs for Larger DF
+total_none <- merge(fecal1_none,fecal3_none,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-None df in form: week3-week1
+total_none_diff <- total_none %>%
+  mutate(total_diff = total.wk3 - total.wk1) %>%
+  arrange(by = total_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 None-Acetate Data
+total_wk1_vec <- as.vector(total_none$total.wk1)
+total_wk3_vec <- as.vector(total_none$total.wk3)
+paired_total_df <- data.frame(Week1 = total_wk1_vec, Week3 = total_wk3_vec)
+totalpairplot <- ggpaired(paired_total_df, cond1 = "Week1", cond2 = "Week3")
+totalpairplot$layers <- totalpairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 None-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(total_none$total.wk1), 
+       as.vector(total_none$total.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(total_none_diff)
+totalpairplot
+totnonw_barplot <- barplot(total_none_diff$total_diff, ylab = "Participants", xlab = "Total Conc. Change (Week 3 - Week 1)", 
+        main = "No Supp. Total Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(total_none_diff)
+```
+
+##pH Change in No-Supp. Cohort from Week 1 to Week 3
+```{r}
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") %>%
+  rename(Participant = Name) %>%
+  filter(Supplement.consumed == "none")
+
+#Making Week 1 BRMPS 1x-pH Data Frame 
+ph_none_wk1 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  rename(ph.wk1 = pH)
+
+#Making Week 3 BRMPS 1x-pH Data Frame 
+ph_none_wk3 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  rename(ph.wk3 = pH)
+
+#Combining Week 1 and Week 3 BRMPS 1x Daily Cohort 
+merged_ph_wks <- merge(ph_none_wk1, ph_none_wk3, by = "Participant") 
+merged_ph_none<- merge(merged_ph_wks, participantsupps1, by = "Participant")
+merged_ph_none <- merged_ph_none %>%
+  select(starts_with("Participant"), starts_with("ph.wk")) %>%
+  mutate(ph.diff = ph.wk3 - ph.wk1) %>%
+  arrange(by_group = ph.diff)
+
+#Summary Statistics and Visualizations for BRMPS 1x Daily pH Change
+nrow(merged_ph_none) 
+t.test(as.vector(merged_ph_none$ph.wk1), 
+       as.vector(merged_ph_none$ph.wk3),
+       alternative = "greater",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(merged_ph_none)
+ph_none_barplot <- barplot(merged_ph_none$ph.diff, ylab = "Participants", 
+        xlab = "pH (Week 3 - Week 1)", 
+        main = "None pH Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(merged_ph_none)
+```
+
+#-------------------------------------------------------------------------------
+#Bristol vs. PH
+##Bristol vs. PH for Week 1 and Week 3 (Participants Averaged)
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+fecal_clean <- fullfecalsample %>%
+  na.omit() %>%
+  select(starts_with("Participant"), 
+         starts_with("Week"),
+         starts_with("pH"),
+         starts_with("Bristol")) %>%
+  filter(Week == "week1" | Week == "week3") 
+
+#Preparing Data for Scatterplot Creation 
+fecal_clean$pH = as.numeric(fecal_clean$pH)
+fecal_clean$Bristol = as.numeric(fecal_clean$Bristol)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean, aes(x=pH, y=Bristol)) +
+  geom_point(alpha=0.3) +
+  ggtitle("PH vs. BRISTOL for All Weeks") +
+  labs(y= "BRISTOL", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean, aes(x=pH, y=Bristol)) +
+  geom_smooth() +
+  ggtitle("BRISTOL vs. PH for All Weeks") +
+  labs(y= "BRISTOL", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean, aes(x=pH, y=Bristol)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("BRISTOL vs. PH for All Weeks") +
+  labs(y= "BRISTOL", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean$pH), as.vector(fecal_clean$Bristol),
+    method = "pearson") #Returns -0.01719789. Low negative correlation 
+
+#Significance Statistics
+brisph_norm<- qqplot(as.vector(fecal_clean$pH), as.vector(fecal_clean$Bristol))
+bartlett.test(Bristol ~ Week, data = fecal_clean)
+cor.test(as.vector(fecal_clean$pH), as.vector(fecal_clean$Bristol), 
+         alternative = "less", method = 'spearman')
+```
+
+##Bristol vs. PH for Week 1 and Week 3 (Participants Unaveraged)
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample_unaveraged <- read.csv("./fecalsample_ua.csv")
+fecal_clean_bristol <- fullfecalsample_unaveraged %>%
+  na.omit() %>%
+  select(starts_with("Participant"), 
+         starts_with("Week"),
+         starts_with("pH"),
+         starts_with("Bristol")) %>%
+  filter(Week == "week1" | Week == "week3") 
+
+#Preparing Data for Scatterplot Creation 
+fecal_clean_bristol$pH = as.numeric(fecal_clean_bristol$pH)
+fecal_clean_bristol$Bristol = as.numeric(fecal_clean_bristol$Bristol)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean_bristol, aes(x=pH, y=Bristol)) +
+  geom_point(alpha=0.3) +
+  ggtitle("PH vs. Bristol for All Weeks") +
+  labs(y= "Bristol", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean_bristol, aes(x=pH, y=Bristol)) +
+  geom_smooth() +
+  ggtitle("Bristol vs. PH for All Weeks") +
+  labs(y= "Bristol", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean_bristol, aes(x=pH, y=Bristol)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("Bristol vs. PH for All Weeks") +
+  labs(y= "Bristol", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean_bristol$pH), as.vector(fecal_clean_bristol$Bristol),
+    method = "spearman") 
+
+#Significance Statistics
+qqplot(as.vector(fecal_clean_bristol$pH), as.vector(fecal_clean_bristol$Bristol))
+bartlett.test(Bristol ~ Week, data = fecal_clean_bristol)
+cor.test(as.vector(fecal_clean_bristol$pH),as.vector(fecal_clean_bristol$Bristol), alternative = "less", method = 'spearman')
+```
+
+##Bristol vs. PH for Week 1 Only 
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+fecal_clean <- fullfecalsample %>%
+  na.omit() %>%
+  select(starts_with("Participant"), 
+         starts_with("Week"),
+         starts_with("pH"),
+         starts_with("Bristol")) %>%
+  filter(Week == "week1") 
+
+#Preparing Data for Scatterplot Creation 
+fecal_clean$pH = as.numeric(fecal_clean$pH)
+fecal_clean$Bristol = as.numeric(fecal_clean$Bristol)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean, aes(x=pH, y=Bristol)) +
+  geom_point(alpha=0.3) +
+  ggtitle("PH vs. BRISTOL for All Weeks") +
+  labs(y= "BRISTOL", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean, aes(x=pH, y=Bristol)) +
+  geom_smooth() +
+  ggtitle("BRISTOL vs. PH for All Weeks") +
+  labs(y= "BRISTOL", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean, aes(x=pH, y=Bristol)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("BRISTOL vs. PH for All Weeks") +
+  labs(y= "BRISTOL", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean$pH), as.vector(fecal_clean$Bristol),
+    method = "pearson") #Returns -0.01719789. Low negative correlation 
+
+#Significance Statistics
+brisph_norm<- qqplot(as.vector(fecal_clean$pH), as.vector(fecal_clean$Bristol))
+cor.test(as.vector(fecal_clean$pH), as.vector(fecal_clean$Bristol), 
+         alternative = "less", method = 'spearman')
+```
+
+##Bristol vs. PH for Week 1 Only (Participants Unaveraged)
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample_unaveraged <- read.csv("./fecalsample_ua.csv")
+fecal_clean_bristol <- fullfecalsample_unaveraged %>%
+  na.omit() %>%
+  select(starts_with("Participant"), 
+         starts_with("Week"),
+         starts_with("pH"),
+         starts_with("Bristol")) %>%
+  filter(Week == "week1") 
+
+#Preparing Data for Scatterplot Creation 
+fecal_clean_bristol$pH = as.numeric(fecal_clean_bristol$pH)
+fecal_clean_bristol$Bristol = as.numeric(fecal_clean_bristol$Bristol)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean_bristol, aes(x=pH, y=Bristol)) +
+  geom_point(alpha=0.3) +
+  ggtitle("PH vs. Bristol for All Weeks") +
+  labs(y= "Bristol", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean_bristol, aes(x=pH, y=Bristol)) +
+  geom_smooth() +
+  ggtitle("Bristol vs. PH for All Weeks") +
+  labs(y= "Bristol", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean_bristol, aes(x=pH, y=Bristol)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("Bristol vs. PH for All Weeks") +
+  labs(y= "Bristol", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean_bristol$pH), as.vector(fecal_clean_bristol$Bristol),
+    method = "spearman") 
+
+#Significance Statistics
+qqplot(as.vector(fecal_clean_bristol$pH), as.vector(fecal_clean_bristol$Bristol))
+cor.test(as.vector(fecal_clean_bristol$pH),as.vector(fecal_clean_bristol$Bristol), alternative = "less", method = 'spearman')
+```
+
+##Bristol vs. PH for Week 3 Only 
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+fecal_clean <- fullfecalsample %>%
+  na.omit() %>%
+  select(starts_with("Participant"), 
+         starts_with("Week"),
+         starts_with("pH"),
+         starts_with("Bristol")) %>%
+  filter(Week == "week3") 
+
+#Preparing Data for Scatterplot Creation 
+fecal_clean$pH = as.numeric(fecal_clean$pH)
+fecal_clean$Bristol = as.numeric(fecal_clean$Bristol)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean, aes(x=pH, y=Bristol)) +
+  geom_point(alpha=0.3) +
+  ggtitle("PH vs. BRISTOL for All Weeks") +
+  labs(y= "BRISTOL", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean, aes(x=pH, y=Bristol)) +
+  geom_smooth() +
+  ggtitle("BRISTOL vs. PH for All Weeks") +
+  labs(y= "BRISTOL", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean, aes(x=pH, y=Bristol)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("BRISTOL vs. PH for All Weeks") +
+  labs(y= "BRISTOL", x = "Average PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean$pH), as.vector(fecal_clean$Bristol),
+    method = "spearman") #Returns -0.01719789. Low negative correlation 
+
+#Significance Statistics
+brisph_norm<- qqplot(as.vector(fecal_clean$pH), as.vector(fecal_clean$Bristol))
+cor.test(as.vector(fecal_clean$pH), as.vector(fecal_clean$Bristol), 
+         alternative = "less", method = 'pearson')
+```
+
+##Bristol vs. PH for Week 3 Only (Participants Unaveraged)
+```{r}
+#Reading in Fecal Sample Data
+fullfecalsample_unaveraged <- read.csv("./fecalsample_ua.csv")
+fecal_clean_bristol <- fullfecalsample_unaveraged %>%
+  na.omit() %>%
+  select(starts_with("Participant"), 
+         starts_with("Week"),
+         starts_with("pH"),
+         starts_with("Bristol")) %>%
+  filter(Week == "week3") 
+
+#Preparing Data for Scatterplot Creation 
+fecal_clean_bristol$pH = as.numeric(fecal_clean_bristol$pH)
+fecal_clean_bristol$Bristol = as.numeric(fecal_clean_bristol$Bristol)
+
+#Creating Scatterplot for SCFA vs. PH
+ggplot(fecal_clean_bristol, aes(x=pH, y=Bristol)) +
+  geom_point(alpha=0.3) +
+  ggtitle("PH vs. Bristol for All Weeks") +
+  labs(y= "Bristol", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH without Points
+ggplot(fecal_clean_bristol, aes(x=pH, y=Bristol)) +
+  geom_smooth() +
+  ggtitle("Bristol vs. PH for All Weeks") +
+  labs(y= "Bristol", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Creating Smoothed Conditional Means for SCFA vs. PH with Points
+ggplot(fecal_clean_bristol, aes(x=pH, y=Bristol)) +
+  geom_point() +
+  geom_smooth() +
+  ggtitle("Bristol vs. PH for All Weeks") +
+  labs(y= "Bristol", x = "PH") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) 
+
+#Correlation Test
+cor(as.vector(fecal_clean_bristol$pH), as.vector(fecal_clean_bristol$Bristol),
+    method = "spearman") 
+
+#Significance Statistics
+qqplot(as.vector(fecal_clean_bristol$pH), as.vector(fecal_clean_bristol$Bristol))
+cor.test(as.vector(fecal_clean_bristol$pH),as.vector(fecal_clean_bristol$Bristol), alternative = "less", method = 'spearman')
+```
+
+#-------------------------------------------------------------------------------
+
+#HiMaize 2x Daily Cohort 
+##Acetate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily HiMaize Participants
+participantsupps <- participantsupps %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "HiMaize 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from HiMaize and Acetate
+fecal1_acetate <- read.csv("./fecalsample_a.csv") %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate_mmol_kg")) %>%
+  filter(Week == "week1") %>%
+  na.omit()
+
+fecal1_himaize <- merge(fecal1_acetate,participantsupps,by="Participant") %>%
+  rename(acetate.wk1 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate.wk1"))
+
+#Making Week 3 Data Frame from HiMaize and Acetate
+fecal3_acetate <- read.csv("./fecalsample_a.csv") %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate_mmol_kg")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_himaize <- merge(fecal3_acetate,participantsupps,by="Participant") %>%
+  rename(acetate.wk3 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate.wk3"))
+
+#Combining Week 1 and Week 3 HiMaize-Acetate DFs for Larger DF
+acetate_himaize <- merge(fecal1_himaize,fecal3_himaize,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-HiMaize df in form: week3-week1
+acetate_himaize_diff <- acetate_himaize %>%
+  mutate(acetate_diff = acetate.wk3 - acetate.wk1) %>%
+  arrange(by = acetate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 HiMaize-Acetate Data
+acetate_wk1_vec <- as.vector(acetate_himaize$acetate.wk1)
+acetate_wk3_vec <- as.vector(acetate_himaize$acetate.wk3)
+paired_acetate_df <- data.frame(Week1 = acetate_wk1_vec, Week3 = acetate_wk3_vec)
+acetatepairplot <- ggpaired(paired_acetate_df, cond1 = "Week1", cond2 = "Week3")
+acetatepairplot$layers <- acetatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 HiMaize-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_himaize$acetate.wk1), 
+       as.vector(acetate_himaize$acetate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_himaize_diff)
+acetatepairplot
+acebrmps2x_barplot <- barplot(acetate_himaize_diff$acetate_diff, ylab = "Participants", xlab = "Acetate. Conc. Change (Week 3 - Week 1)", 
+        main = "HiMaize 2x Daily Acetate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_himaize_diff)
+```
+
+##Acetate Proportion in Week 1 vs. Week 3
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "HiMaize 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop1 = Acetate_mmol_kg / scfa_sum) 
+
+fecal1_himaizeprop <- merge(fecal1_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk1 = acetate_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop3 = Acetate_mmol_kg / scfa_sum) 
+
+fecal3_himaizeprop <- merge(fecal3_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk3 = acetate_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_himaizeprop <- merge(fecal1_himaizeprop,fecal3_himaizeprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_himaize_diffprop <- acetate_himaizeprop %>%
+  mutate(acetate_prop_diff = acetate_prop_wk3 - acetate_prop_wk1) %>%
+  arrange(by = acetate_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vecprop <- as.vector(acetate_himaize_diffprop$acetate_prop_wk1)
+acetate_wk3_vecprop <- as.vector(acetate_himaize_diffprop$acetate_prop_wk3)
+paired_acetate_dfprop <- data.frame(Week1 = acetate_wk1_vecprop, 
+                                    Week3 = acetate_wk3_vecprop)
+acetatepairplotprop <- ggpaired(paired_acetate_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+acetatepairplotprop$layers <- acetatepairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_himaizeprop$acetate_prop_wk1), 
+       as.vector(acetate_himaizeprop$acetate_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_himaize_diffprop) # p-value = 0.0971. 
+acetatepairplotprop
+aceprop1x_barplot <- barplot(acetate_himaize_diffprop$acetate_prop_diff, ylab = "Participants", xlab = "Acetate Prop. Change (Week 3 - Week 1)", 
+        main = "HiMaize 2x Daily Ace. Prop. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_himaize_diffprop)
+```
+
+##Butyrate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily HiMaize Participants
+participantsupps <- participantsupps %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "HiMaize 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from HiMaize and Acetate
+fecal1_butyrate <- read.csv("./fecalsample_a.csv") %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate_mmol_kg")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_himaize <- merge(fecal1_butyrate,participantsupps,by="Participant") %>%
+  rename(butyrate.wk1 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("butyrate.wk1"))
+
+#Making Week 3 Data Frame from HiMaize and Acetate
+fecal3_butyrate <- read.csv("./fecalsample_a.csv") %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate_mmol_kg")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_himaize <- merge(fecal3_butyrate,participantsupps,by="Participant") %>%
+  rename(butyrate.wk3 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("butyrate.wk3"))
+
+#Combining Week 1 and Week 3 HiMaize-Acetate DFs for Larger DF
+butyrate_himaize <- merge(fecal1_himaize,fecal3_himaize,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-HiMaize df in form: week3-week1
+butyrate_himaize_diff <- butyrate_himaize %>%
+  mutate(butyrate_diff = butyrate.wk3 - butyrate.wk1) %>%
+  arrange(by = butyrate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 HiMaize-Acetate Data
+butyrate_wk1_vec <- as.vector(butyrate_himaize$butyrate.wk1)
+butyrate_wk3_vec <- as.vector(butyrate_himaize$butyrate.wk3)
+paired_butyrate_df <- data.frame(Week1 = butyrate_wk1_vec, Week3 = butyrate_wk3_vec)
+butyratepairplot <- ggpaired(paired_butyrate_df, cond1 = "Week1", cond2 = "Week3")
+butyratepairplot$layers <- butyratepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 HiMaize-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(butyrate_himaize$butyrate.wk1), 
+       as.vector(butyrate_himaize$butyrate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(butyrate_himaize_diff)
+butyratepairplot
+butbrmps2x_barplot <- barplot(butyrate_himaize_diff$butyrate_diff, ylab = "Participants", xlab = "Butyrate. Conc. Change (Week 3 - Week 1)", 
+        main = "HiMaize 2x Daily Butyrate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(butyrate_himaize_diff)
+```
+
+##Propionate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily HiMaize Participants
+participantsupps <- participantsupps %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "HiMaize 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from HiMaize and Acetate
+fecal1_propionate <- read.csv("./fecalsample_a.csv") %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate_mmol_kg")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_himaize <- merge(fecal1_propionate,participantsupps,by="Participant") %>%
+  rename(propionate.wk1 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("propionate.wk1"))
+
+#Making Week 3 Data Frame from HiMaize and Acetate
+fecal3_propionate <- read.csv("./fecalsample_a.csv") %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate_mmol_kg")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_himaize <- merge(fecal3_propionate,participantsupps,by="Participant") %>%
+  rename(propionate.wk3 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("propionate.wk3"))
+
+#Combining Week 1 and Week 3 HiMaize-Acetate DFs for Larger DF
+propionate_himaize <- merge(fecal1_himaize,fecal3_himaize,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-HiMaize df in form: week3-week1
+propionate_himaize_diff <- propionate_himaize %>%
+  mutate(propionate_diff = propionate.wk3 - propionate.wk1) %>%
+  arrange(by = propionate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 HiMaize-Acetate Data
+propionate_wk1_vec <- as.vector(propionate_himaize$propionate.wk1)
+propionate_wk3_vec <- as.vector(propionate_himaize$propionate.wk3)
+paired_propionate_df <- data.frame(Week1 = propionate_wk1_vec, Week3 = propionate_wk3_vec)
+propionatepairplot <- ggpaired(paired_propionate_df, cond1 = "Week1", cond2 = "Week3")
+propionatepairplot$layers <- propionatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 HiMaize-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(propionate_himaize$propionate.wk1), 
+       as.vector(propionate_himaize$propionate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(propionate_himaize_diff)
+propionatepairplot
+propbrmps2x_barplot <- barplot(propionate_himaize_diff$propionate_diff, ylab = "Participants", xlab = "Prop. Conc. Change (Week 3 - Week 1)", 
+        main = "HiMaize 2x Daily Prop. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(propionate_himaize_diff)
+```
+
+##Total SCFA Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps <- participantsupps %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "HiMaize 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Total SCFAs
+fecal1_tot <- read.csv("./fecalsample_a.csv") %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate_mmol_kg"),
+         starts_with("Butyrate_mmol_kg"),
+         starts_with("Propionate_mmol_kg")) %>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5]))
+
+fecal1_himaize <- merge(fecal1_tot,participantsupps,by="Participant") %>%
+  rename(scfa.wk1 = scfa_sum) %>%
+  select(starts_with("Participant"),
+         starts_with("scfa.wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Total SCFAs
+fecal3_tot <- read.csv("./fecalsample_a.csv") %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate_mmol_kg"),
+         starts_with("Butyrate_mmol_kg"),
+         starts_with("Propionate_mmol_kg")) %>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5]))
+
+fecal3_himaize <- merge(fecal3_tot,participantsupps,by="Participant") %>%
+  rename(scfa.wk3 = scfa_sum) %>%
+  select(starts_with("Participant"),
+         starts_with("scfa.wk3"))
+
+#Combining Week 1 and Week 3 HiMaize-Acetate DFs for Larger DF
+tot_himaize <- merge(fecal1_himaize,fecal3_himaize,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-HiMaize df in form: week3-week1
+tot_himaize_diff <- tot_himaize %>%
+  mutate(tot_diff = scfa.wk3 - scfa.wk1) %>%
+  arrange(by = tot_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Total SCFA Data
+#tot_wk1_vec <- as.vector(tot_himaize$scfa.wk1)
+#tot_wk3_vec <- as.vector(tot_himaize$scfa.wk3)
+#paired_tot_df <- data.frame(Week1 = tot_wk1_vec, Week3 = tot_wk3_vec)
+#totpairplot <- ggpaired(paired_tot_df, cond1 = "Week1", cond2 = "Week3")
+#totpairplot$layers <- totpairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Total SCFA
+##t-test means (wk1-wk3) difference
+t.test(as.vector(tot_himaize$scfa.wk1), 
+       as.vector(tot_himaize$scfa.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(tot_himaize_diff)
+#totpairplot
+totscfahimaize2x_barplot <- barplot(tot_himaize_diff$tot_diff, ylab = "Participants",
+      xlab = "Tot. SCFA Conc. Change (Wk 3 - Wk 1)", 
+        main = "BRMPS 2x Daily Tot. SCFA Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(tot_himaize_diff)
+```
+
+```{r}
+#Making Week 1 BRMPS 1x-pH Data Frame 
+ph_himaize_wk1 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  rename(ph.wk1 = pH)
+
+#Making Week 3 BRMPS 1x-pH Data Frame 
+ph_himaize_wk3 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  rename(ph.wk3 = pH)
+
+#Combining Week 1 and Week 3 BRMPS 1x Daily Cohort 
+merged_ph_wks <- merge(ph_himaize_wk1, ph_himaize_wk3, by = "Participant") 
+merged_ph_himaize<- merge(merged_ph_wks, participantsupps1, by = "Participant")
+merged_ph_himaize <- merged_ph_himaize %>%
+  select(starts_with("Participant"), starts_with("ph.wk")) %>%
+  mutate(ph.diff = ph.wk3 - ph.wk1) %>%
+  arrange(by_group = ph.diff)
+
+#Summary Statistics and Visualizations for BRMPS 1x Daily pH Change
+nrow(merged_ph_brmps) 
+t.test(as.vector(merged_ph_himaize$ph.wk1), 
+       as.vector(merged_ph_himaize$ph.wk3),
+       alternative = "greater",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(merged_ph_brmps)
+ph_brmps1x_barplot <- barplot(merged_ph_himaize$ph.diff, ylab = "Participants", 
+        xlab = "pH (Week 3 - Week 1)", 
+        main = "HiMaize 2x Daily pH Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(merged_ph_himaize)
+```
+
+##pH Change in HiMaize 2x Cohort from Week 1 to Week 3
+```{r}
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") %>%
+  rename(Participant = Name) %>%
+  filter(Supplement.consumed == "HiMaize 2xdaily 20")
+
+#Making Week 1 BRMPS 1x-pH Data Frame 
+ph_himaize_wk1 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  rename(ph.wk1 = pH)
+
+#Making Week 3 BRMPS 1x-pH Data Frame 
+ph_himaize_wk3 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  rename(ph.wk3 = pH)
+View(ph_himaize_wk3)
+View(participantsupps)
+
+#Combining Week 1 and Week 3 BRMPS 1x Daily Cohort 
+merged_ph_wks <- merge(ph_himaize_wk1, ph_himaize_wk3, by = "Participant") 
+merged_ph_himaize<- merge(merged_ph_wks, participantsupps, by = "Participant")
+merged_ph_himaize <- merged_ph_himaize %>%
+  select(starts_with("Participant"), starts_with("ph.wk")) %>%
+  mutate(ph.diff = ph.wk3 - ph.wk1) %>%
+  arrange(by_group = ph.diff)
+
+#Summary Statistics and Visualizations for BRMPS 1x Daily pH Change
+nrow(merged_ph_himaize) 
+t.test(as.vector(merged_ph_himaize$ph.wk1), 
+       as.vector(merged_ph_himaize$ph.wk3),
+       alternative = "greater",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(merged_ph_himaize)
+ph_brmps1x_barplot <- barplot(merged_ph_himaize$ph.diff, ylab = "Participants", 
+        xlab = "pH (Week 3 - Week 1)", 
+        main = "HiMaize 2x Daily pH Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(merged_ph_brmps)
+```
+#-------------------------------------------------------------------------------
+#LODAAT 1x Daily 20
+##Acetate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 1xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk1 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk3 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diff <- acetate_brmps %>%
+  mutate(acetate_diff = acetate.wk3 - acetate.wk1) %>%
+  arrange(by = acetate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vec <- as.vector(acetate_brmps$acetate.wk1)
+acetate_wk3_vec <- as.vector(acetate_brmps$acetate.wk3)
+paired_acetate_df <- data.frame(Week1 = acetate_wk1_vec, Week3 = acetate_wk3_vec)
+acetatepairplot <- ggpaired(paired_acetate_df, cond1 = "Week1", cond2 = "Week3")
+acetatepairplot$layers <- acetatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmps$acetate.wk1), 
+       as.vector(acetate_brmps$acetate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diff)
+acetatepairplot
+acebrmps1x_barplot <- barplot(acetate_brmps_diff$acetate_diff, ylab = "Participants", xlab = "Acet. Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 1x Daily 20 Acetate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diff)
+```
+
+##Acetate Proportion in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 1xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop1 = Acetate_mmol_kg / scfa_sum) 
+
+fecal1_brmpsprop <- merge(fecal1_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk1 = acetate_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop3 = Acetate_mmol_kg / scfa_sum) 
+
+fecal3_brmpsprop <- merge(fecal3_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk3 = acetate_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmpsprop <- merge(fecal1_brmpsprop,fecal3_brmpsprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diffprop <- acetate_brmpsprop %>%
+  mutate(acetate_prop_diff = acetate_prop_wk3 - acetate_prop_wk1) %>%
+  arrange(by = acetate_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk1)
+acetate_wk3_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk3)
+paired_acetate_dfprop <- data.frame(Week1 = acetate_wk1_vecprop, 
+                                    Week3 = acetate_wk3_vecprop)
+acetatepairplotprop <- ggpaired(paired_acetate_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+acetatepairplotprop$layers <- acetatepairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmpsprop$acetate_prop_wk1), 
+       as.vector(acetate_brmpsprop$acetate_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diffprop) # p-value = 0.0971. 
+acetatepairplotprop
+aceprop1x_barplot <- barplot(acetate_brmps_diffprop$acetate_prop_diff, ylab = "Participants", xlab = "Acetate Prop. Change (Week 3 - Week 1)", 
+        main = "LODAAT 1x Daily Ace. Prop. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diffprop)
+```
+
+##Butyrate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") 
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 1xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk1 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("butyrate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk3 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("butyrate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+butyrate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round) 
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+butyrate_brmps_diff <- butyrate_brmps %>%
+  mutate(butyrate_diff = butyrate.wk3 - butyrate.wk1) %>%
+  arrange(by = butyrate_diff)
+
+butyrate_brmps_diff <- butyrate_brmps_diff[-c(86, 87, 88), ]
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+butyrate_wk1_vec <- as.vector(butyrate_brmps$butyrate.wk1)
+butyrate_wk3_vec <- as.vector(butyrate_brmps$butyrate.wk3)
+paired_butyrate_df <- data.frame(Week1 = butyrate_wk1_vec, Week3 = butyrate_wk3_vec)
+butyratepairplot <- ggpaired(paired_butyrate_df, cond1 = "Week1", cond2 = "Week3")
+butyratepairplot$layers <- butyratepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(butyrate_brmps_diff$butyrate.wk1), 
+       as.vector(butyrate_brmps_diff$butyrate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(butyrate_brmps_diff)
+butyratepairplot
+butbrmps1x_barplot <- barplot(butyrate_brmps_diff$butyrate_diff, ylab = "Participants", xlab = "Butyr. Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 1x Daily Butyrate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(butyrate_brmps_diff)
+```
+
+##Propionate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 1xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk1 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("propionate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week3") %>%
+  na.omit()
+
+fecal3_brmps <- merge(fecal3_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk3 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("propionate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+propionate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+propionate_brmps_diff <- propionate_brmps %>%
+  mutate(propionate_diff = propionate.wk3 - propionate.wk1) %>%
+  arrange(by = propionate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+propionate_wk1_vec <- as.vector(propionate_brmps$propionate.wk1)
+propionate_wk3_vec <- as.vector(propionate_brmps$propionate.wk3)
+paired_propionate_df <- data.frame(Week1 = propionate_wk1_vec, Week3 = propionate_wk3_vec)
+propionatepairplot <- ggpaired(paired_propionate_df, cond1 = "Week1", cond2 = "Week3")
+propionatepairplot$layers <- propionatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(propionate_brmps$propionate.wk1), 
+       as.vector(propionate_brmps$propionate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(propionate_brmps_diff)
+propionatepairplot
+probrmps1x_barplot <- barplot(propionate_brmps_diff$propionate_diff, ylab = "Participants", xlab = "Propio. Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 1x Daily Propionate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(propionate_brmps_diff)
+```
+##Prop+But Proportion (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 1xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_bpprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(bp_prop1 = (Butyrate_mmol_kg+Propionate_mmol_kg) / scfa_sum) 
+#View(fullfecalsample)
+
+fecal1_brmpsprop <- merge(fecal1_bpprop,participantsupps1,by="Participant") %>%
+  rename(bp_prop_wk1 = bp_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("bp_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_bpprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(bp_prop3 = (Butyrate_mmol_kg+Propionate_mmol_kg) / scfa_sum) 
+
+fecal3_brmpsprop <- merge(fecal3_bpprop,participantsupps1,by="Participant") %>%
+  rename(bp_prop_wk3 = bp_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("bp_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+bp_brmpsprop <- merge(fecal1_brmpsprop,fecal3_brmpsprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+bp_brmps_diffprop <- bp_brmpsprop %>%
+  mutate(bp_prop_diff = bp_prop_wk3 - bp_prop_wk1) %>%
+  arrange(by = bp_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+bp_wk1_vecprop <- as.vector(bp_brmps_diffprop$bp_prop_wk1)
+bp_wk3_vecprop <- as.vector(bp_brmps_diffprop$bp_prop_wk3)
+paired_bp_dfprop <- data.frame(Week1 = bp_wk1_vecprop, 
+                                    Week3 = bp_wk3_vecprop)
+bppairplotprop <- ggpaired(paired_bp_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+bppairplotprop$layers <- bppairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(bp_brmpsprop$bp_prop_wk1), 
+       as.vector(bp_brmpsprop$bp_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(bp_brmps_diffprop) # p-value = 0.0971. 
+bppairplotprop
+bpprop1x_barplot <- barplot(bp_brmps_diffprop$bp_prop_diff, ylab = "Participants", xlab = "BP Prop. Change (Week 3 - Week 1)", 
+        main = "LODAAT 1x Daily BP. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(bp_brmps_diffprop)
+```
+
+##Total SCFA Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 1xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_total,participantsupps1,by="Participant") %>%
+  rename(total.wk1 = scfa_sum) %>%
+  select(starts_with("Participant"),
+        starts_with("total"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_total,participantsupps1,by="Participant") %>%
+  rename(total.wk3 = scfa_sum) %>%
+  select(starts_with("Participant"),
+         starts_with("total"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+total_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+total_brmps_diff <- total_brmps %>%
+  mutate(total_diff = total.wk3 - total.wk1) %>%
+  arrange(by = total_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+total_wk1_vec <- as.vector(total_brmps$total.wk1)
+total_wk3_vec <- as.vector(total_brmps$total.wk3)
+paired_total_df <- data.frame(Week1 = total_wk1_vec, Week3 = total_wk3_vec)
+totalpairplot <- ggpaired(paired_total_df, cond1 = "Week1", cond2 = "Week3")
+totalpairplot$layers <- totalpairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(total_brmps$total.wk1), 
+       as.vector(total_brmps$total.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(total_brmps_diff)
+totalpairplot
+totbrmps1x_barplot <- barplot(total_brmps_diff$total_diff, ylab = "Participants", xlab = "Total Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 1x Daily Total Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(total_brmps_diff)
+```
+
+##pH Change in BRMPS 2x Cohort from Week 1 to Week 3
+```{r}
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") %>%
+  rename(Participant = Name) %>%
+  filter(Supplement.consumed == "LODAAT 1xdaily 20")
+
+#Making Week 1 BRMPS 2x-pH Data Frame 
+ph_brmps_wk1 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  rename(ph.wk1 = pH)
+
+#Making Week 3 BRMPS 2x-pH Data Frame 
+ph_brmps_wk3 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  rename(ph.wk3 = pH)
+
+#Combining Week 1 and Week 3 BRMPS 2x Daily Cohort 
+merged_ph_wks <- merge(ph_brmps_wk1, ph_brmps_wk3, by = "Participant") %>%
+  select(-starts_with("Week"))
+merged_ph_brmps<- merge(merged_ph_wks, participantsupps1, by = "Participant")
+merged_ph_brmps <- merged_ph_brmps %>%
+  select(starts_with("Participant"), starts_with("ph.wk")) %>%
+  mutate(ph.diff = ph.wk3 - ph.wk1) %>%
+  arrange(by_group = ph.diff)
+
+#Summary Statistics and Visualizations for BRMPS 2x Daily pH Change
+nrow(merged_ph_brmps) 
+t.test(as.vector(merged_ph_brmps$ph.wk1), 
+       as.vector(merged_ph_brmps$ph.wk3),
+       alternative = "greater",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(merged_ph_brmps)
+ph_brmps1x_barplot <- barplot(merged_ph_brmps$ph.diff, ylab = "Participants", 
+        xlab = "pH (Week 3 - Week 1)", 
+        main = "LODAAT 1x Daily pH Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(merged_ph_brmps)
+```
+#-------------------------------------------------------------------------------
+#LODAAT 2x Daily 9
+##Acetate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 9") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk1 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk3 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diff <- acetate_brmps %>%
+  mutate(acetate_diff = acetate.wk3 - acetate.wk1) %>%
+  arrange(by = acetate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vec <- as.vector(acetate_brmps$acetate.wk1)
+acetate_wk3_vec <- as.vector(acetate_brmps$acetate.wk3)
+paired_acetate_df <- data.frame(Week1 = acetate_wk1_vec, Week3 = acetate_wk3_vec)
+acetatepairplot <- ggpaired(paired_acetate_df, cond1 = "Week1", cond2 = "Week3")
+acetatepairplot$layers <- acetatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmps$acetate.wk1), 
+       as.vector(acetate_brmps$acetate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diff)
+acetatepairplot
+acebrmps1x_barplot <- barplot(acetate_brmps_diff$acetate_diff, ylab = "Participants", xlab = "Acet. Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 9 Acetate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diff)
+```
+
+##Acetate Proportion in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 9") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop1 = Acetate_mmol_kg / scfa_sum) 
+
+fecal1_brmpsprop <- merge(fecal1_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk1 = acetate_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop3 = Acetate_mmol_kg / scfa_sum) 
+
+fecal3_brmpsprop <- merge(fecal3_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk3 = acetate_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmpsprop <- merge(fecal1_brmpsprop,fecal3_brmpsprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diffprop <- acetate_brmpsprop %>%
+  mutate(acetate_prop_diff = acetate_prop_wk3 - acetate_prop_wk1) %>%
+  arrange(by = acetate_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk1)
+acetate_wk3_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk3)
+paired_acetate_dfprop <- data.frame(Week1 = acetate_wk1_vecprop, 
+                                    Week3 = acetate_wk3_vecprop)
+acetatepairplotprop <- ggpaired(paired_acetate_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+acetatepairplotprop$layers <- acetatepairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmpsprop$acetate_prop_wk1), 
+       as.vector(acetate_brmpsprop$acetate_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diffprop) # p-value = 0.0971. 
+acetatepairplotprop
+aceprop1x_barplot <- barplot(acetate_brmps_diffprop$acetate_prop_diff, ylab = "Participants", xlab = "Acetate Prop. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 9 Ace. Prop. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diffprop)
+```
+
+##Butyrate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") 
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 9") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk1 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("butyrate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk3 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("butyrate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+butyrate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round) 
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+butyrate_brmps_diff <- butyrate_brmps %>%
+  mutate(butyrate_diff = butyrate.wk3 - butyrate.wk1) %>%
+  arrange(by = butyrate_diff)
+
+butyrate_brmps_diff <- butyrate_brmps_diff[-c(86, 87, 88), ]
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+butyrate_wk1_vec <- as.vector(butyrate_brmps$butyrate.wk1)
+butyrate_wk3_vec <- as.vector(butyrate_brmps$butyrate.wk3)
+paired_butyrate_df <- data.frame(Week1 = butyrate_wk1_vec, Week3 = butyrate_wk3_vec)
+butyratepairplot <- ggpaired(paired_butyrate_df, cond1 = "Week1", cond2 = "Week3")
+butyratepairplot$layers <- butyratepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(butyrate_brmps_diff$butyrate.wk1), 
+       as.vector(butyrate_brmps_diff$butyrate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(butyrate_brmps_diff)
+butyratepairplot
+butbrmps1x_barplot <- barplot(butyrate_brmps_diff$butyrate_diff, ylab = "Participants", xlab = "Butyr. Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 9 Butyrate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(butyrate_brmps_diff)
+```
+
+##Propionate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 9") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk1 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("propionate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week3") %>%
+  na.omit()
+
+fecal3_brmps <- merge(fecal3_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk3 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("propionate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+propionate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+propionate_brmps_diff <- propionate_brmps %>%
+  mutate(propionate_diff = propionate.wk3 - propionate.wk1) %>%
+  arrange(by = propionate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+propionate_wk1_vec <- as.vector(propionate_brmps$propionate.wk1)
+propionate_wk3_vec <- as.vector(propionate_brmps$propionate.wk3)
+paired_propionate_df <- data.frame(Week1 = propionate_wk1_vec, Week3 = propionate_wk3_vec)
+propionatepairplot <- ggpaired(paired_propionate_df, cond1 = "Week1", cond2 = "Week3")
+propionatepairplot$layers <- propionatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(propionate_brmps$propionate.wk1), 
+       as.vector(propionate_brmps$propionate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(propionate_brmps_diff)
+propionatepairplot
+probrmps1x_barplot <- barplot(propionate_brmps_diff$propionate_diff, ylab = "Participants", xlab = "Propio. Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 9 Propionate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(propionate_brmps_diff)
+```
+##Prop+But Proportion (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 9") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_bpprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(bp_prop1 = (Butyrate_mmol_kg+Propionate_mmol_kg) / scfa_sum) 
+#View(fullfecalsample)
+
+fecal1_brmpsprop <- merge(fecal1_bpprop,participantsupps1,by="Participant") %>%
+  rename(bp_prop_wk1 = bp_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("bp_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_bpprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(bp_prop3 = (Butyrate_mmol_kg+Propionate_mmol_kg) / scfa_sum) 
+
+fecal3_brmpsprop <- merge(fecal3_bpprop,participantsupps1,by="Participant") %>%
+  rename(bp_prop_wk3 = bp_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("bp_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+bp_brmpsprop <- merge(fecal1_brmpsprop,fecal3_brmpsprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+bp_brmps_diffprop <- bp_brmpsprop %>%
+  mutate(bp_prop_diff = bp_prop_wk3 - bp_prop_wk1) %>%
+  arrange(by = bp_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+bp_wk1_vecprop <- as.vector(bp_brmps_diffprop$bp_prop_wk1)
+bp_wk3_vecprop <- as.vector(bp_brmps_diffprop$bp_prop_wk3)
+paired_bp_dfprop <- data.frame(Week1 = bp_wk1_vecprop, 
+                                    Week3 = bp_wk3_vecprop)
+bppairplotprop <- ggpaired(paired_bp_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+bppairplotprop$layers <- bppairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(bp_brmpsprop$bp_prop_wk1), 
+       as.vector(bp_brmpsprop$bp_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(bp_brmps_diffprop) # p-value = 0.0971. 
+bppairplotprop
+bpprop1x_barplot <- barplot(bp_brmps_diffprop$bp_prop_diff, ylab = "Participants", xlab = "BP Prop. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 9 BP. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(bp_brmps_diffprop)
+```
+
+##Total SCFA Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 9") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_total,participantsupps1,by="Participant") %>%
+  rename(total.wk1 = scfa_sum) %>%
+  select(starts_with("Participant"),
+        starts_with("total"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_total,participantsupps1,by="Participant") %>%
+  rename(total.wk3 = scfa_sum) %>%
+  select(starts_with("Participant"),
+         starts_with("total"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+total_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+total_brmps_diff <- total_brmps %>%
+  mutate(total_diff = total.wk3 - total.wk1) %>%
+  arrange(by = total_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+total_wk1_vec <- as.vector(total_brmps$total.wk1)
+total_wk3_vec <- as.vector(total_brmps$total.wk3)
+paired_total_df <- data.frame(Week1 = total_wk1_vec, Week3 = total_wk3_vec)
+totalpairplot <- ggpaired(paired_total_df, cond1 = "Week1", cond2 = "Week3")
+totalpairplot$layers <- totalpairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(total_brmps$total.wk1), 
+       as.vector(total_brmps$total.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(total_brmps_diff)
+totalpairplot
+totbrmps1x_barplot <- barplot(total_brmps_diff$total_diff, ylab = "Participants", xlab = "Total Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 9 Total Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(total_brmps_diff)
+```
+
+##pH Change in BRMPS 2x Cohort from Week 1 to Week 3
+```{r}
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") %>%
+  rename(Participant = Name) %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 9")
+
+#Making Week 1 BRMPS 2x-pH Data Frame 
+ph_brmps_wk1 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  rename(ph.wk1 = pH)
+
+#Making Week 3 BRMPS 2x-pH Data Frame 
+ph_brmps_wk3 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  rename(ph.wk3 = pH)
+
+#Combining Week 1 and Week 3 BRMPS 2x Daily Cohort 
+merged_ph_wks <- merge(ph_brmps_wk1, ph_brmps_wk3, by = "Participant") %>%
+  select(-starts_with("Week"))
+merged_ph_brmps<- merge(merged_ph_wks, participantsupps1, by = "Participant")
+merged_ph_brmps <- merged_ph_brmps %>%
+  select(starts_with("Participant"), starts_with("ph.wk")) %>%
+  mutate(ph.diff = ph.wk3 - ph.wk1) %>%
+  arrange(by_group = ph.diff)
+
+#Summary Statistics and Visualizations for BRMPS 2x Daily pH Change
+nrow(merged_ph_brmps) 
+t.test(as.vector(merged_ph_brmps$ph.wk1), 
+       as.vector(merged_ph_brmps$ph.wk3),
+       alternative = "greater",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(merged_ph_brmps)
+ph_brmps1x_barplot <- barplot(merged_ph_brmps$ph.diff, ylab = "Participants", 
+        xlab = "pH (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 9 pH Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(merged_ph_brmps)
+```
+#-------------------------------------------------------------------------------
+#LODAAT 2x Daily 18 and 20
+##Acetate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk1 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk3 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diff <- acetate_brmps %>%
+  mutate(acetate_diff = acetate.wk3 - acetate.wk1) %>%
+  arrange(by = acetate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vec <- as.vector(acetate_brmps$acetate.wk1)
+acetate_wk3_vec <- as.vector(acetate_brmps$acetate.wk3)
+paired_acetate_df <- data.frame(Week1 = acetate_wk1_vec, Week3 = acetate_wk3_vec)
+acetatepairplot <- ggpaired(paired_acetate_df, cond1 = "Week1", cond2 = "Week3")
+acetatepairplot$layers <- acetatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmps$acetate.wk1), 
+       as.vector(acetate_brmps$acetate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diff)
+acetatepairplot
+acebrmps1x_barplot <- barplot(acetate_brmps_diff$acetate_diff, ylab = "Participants", xlab = "Acet. Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 Acetate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diff)
+```
+
+##Acetate Proportion in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop1 = Acetate_mmol_kg / scfa_sum) 
+
+fecal1_brmpsprop <- merge(fecal1_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk1 = acetate_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop3 = Acetate_mmol_kg / scfa_sum) 
+
+fecal3_brmpsprop <- merge(fecal3_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk3 = acetate_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmpsprop <- merge(fecal1_brmpsprop,fecal3_brmpsprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diffprop <- acetate_brmpsprop %>%
+  mutate(acetate_prop_diff = acetate_prop_wk3 - acetate_prop_wk1) %>%
+  arrange(by = acetate_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk1)
+acetate_wk3_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk3)
+paired_acetate_dfprop <- data.frame(Week1 = acetate_wk1_vecprop, 
+                                    Week3 = acetate_wk3_vecprop)
+acetatepairplotprop <- ggpaired(paired_acetate_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+acetatepairplotprop$layers <- acetatepairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmpsprop$acetate_prop_wk1), 
+       as.vector(acetate_brmpsprop$acetate_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diffprop) # p-value = 0.0971. 
+acetatepairplotprop
+aceprop1x_barplot <- barplot(acetate_brmps_diffprop$acetate_prop_diff, ylab = "Participants", xlab = "Acetate Prop. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 Ace. Prop. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diffprop)
+```
+
+##Butyrate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") 
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk1 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("butyrate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk3 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("butyrate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+butyrate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round) 
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+butyrate_brmps_diff <- butyrate_brmps %>%
+  mutate(butyrate_diff = butyrate.wk3 - butyrate.wk1) %>%
+  arrange(by = butyrate_diff)
+
+butyrate_brmps_diff <- butyrate_brmps_diff[-c(86, 87, 88), ]
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+butyrate_wk1_vec <- as.vector(butyrate_brmps$butyrate.wk1)
+butyrate_wk3_vec <- as.vector(butyrate_brmps$butyrate.wk3)
+paired_butyrate_df <- data.frame(Week1 = butyrate_wk1_vec, Week3 = butyrate_wk3_vec)
+butyratepairplot <- ggpaired(paired_butyrate_df, cond1 = "Week1", cond2 = "Week3")
+butyratepairplot$layers <- butyratepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(butyrate_brmps_diff$butyrate.wk1), 
+       as.vector(butyrate_brmps_diff$butyrate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(butyrate_brmps_diff)
+butyratepairplot
+butbrmps1x_barplot <- barplot(butyrate_brmps_diff$butyrate_diff, ylab = "Participants", xlab = "Butyr. Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 Butyrate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(butyrate_brmps_diff)
+```
+
+##Propionate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk1 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("propionate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week3") %>%
+  na.omit()
+
+fecal3_brmps <- merge(fecal3_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk3 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("propionate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+propionate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+propionate_brmps_diff <- propionate_brmps %>%
+  mutate(propionate_diff = propionate.wk3 - propionate.wk1) %>%
+  arrange(by = propionate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+propionate_wk1_vec <- as.vector(propionate_brmps$propionate.wk1)
+propionate_wk3_vec <- as.vector(propionate_brmps$propionate.wk3)
+paired_propionate_df <- data.frame(Week1 = propionate_wk1_vec, Week3 = propionate_wk3_vec)
+propionatepairplot <- ggpaired(paired_propionate_df, cond1 = "Week1", cond2 = "Week3")
+propionatepairplot$layers <- propionatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(propionate_brmps$propionate.wk1), 
+       as.vector(propionate_brmps$propionate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(propionate_brmps_diff)
+propionatepairplot
+probrmps1x_barplot <- barplot(propionate_brmps_diff$propionate_diff, ylab = "Participants", xlab = "Propio. Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 Propionate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(propionate_brmps_diff)
+```
+##Prop+But Proportion (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_bpprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(bp_prop1 = (Butyrate_mmol_kg+Propionate_mmol_kg) / scfa_sum) 
+#View(fullfecalsample)
+
+fecal1_brmpsprop <- merge(fecal1_bpprop,participantsupps1,by="Participant") %>%
+  rename(bp_prop_wk1 = bp_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("bp_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_bpprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(bp_prop3 = (Butyrate_mmol_kg+Propionate_mmol_kg) / scfa_sum) 
+
+fecal3_brmpsprop <- merge(fecal3_bpprop,participantsupps1,by="Participant") %>%
+  rename(bp_prop_wk3 = bp_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("bp_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+bp_brmpsprop <- merge(fecal1_brmpsprop,fecal3_brmpsprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+bp_brmps_diffprop <- bp_brmpsprop %>%
+  mutate(bp_prop_diff = bp_prop_wk3 - bp_prop_wk1) %>%
+  arrange(by = bp_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+bp_wk1_vecprop <- as.vector(bp_brmps_diffprop$bp_prop_wk1)
+bp_wk3_vecprop <- as.vector(bp_brmps_diffprop$bp_prop_wk3)
+paired_bp_dfprop <- data.frame(Week1 = bp_wk1_vecprop, 
+                                    Week3 = bp_wk3_vecprop)
+bppairplotprop <- ggpaired(paired_bp_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+bppairplotprop$layers <- bppairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(bp_brmpsprop$bp_prop_wk1), 
+       as.vector(bp_brmpsprop$bp_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(bp_brmps_diffprop) # p-value = 0.0971. 
+bppairplotprop
+bpprop1x_barplot <- barplot(bp_brmps_diffprop$bp_prop_diff, ylab = "Participants", xlab = "BP Prop. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 BP. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(bp_brmps_diffprop)
+```
+
+##Total SCFA Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_total,participantsupps1,by="Participant") %>%
+  rename(total.wk1 = scfa_sum) %>%
+  select(starts_with("Participant"),
+        starts_with("total"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_total,participantsupps1,by="Participant") %>%
+  rename(total.wk3 = scfa_sum) %>%
+  select(starts_with("Participant"),
+         starts_with("total"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+total_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+total_brmps_diff <- total_brmps %>%
+  mutate(total_diff = total.wk3 - total.wk1) %>%
+  arrange(by = total_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+total_wk1_vec <- as.vector(total_brmps$total.wk1)
+total_wk3_vec <- as.vector(total_brmps$total.wk3)
+paired_total_df <- data.frame(Week1 = total_wk1_vec, Week3 = total_wk3_vec)
+totalpairplot <- ggpaired(paired_total_df, cond1 = "Week1", cond2 = "Week3")
+totalpairplot$layers <- totalpairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(total_brmps$total.wk1), 
+       as.vector(total_brmps$total.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(total_brmps_diff)
+totalpairplot
+totbrmps1x_barplot <- barplot(total_brmps_diff$total_diff, ylab = "Participants", xlab = "Total Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 Total Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(total_brmps_diff)
+```
+
+##pH Change in BRMPS 2x Cohort from Week 1 to Week 3
+```{r}
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") %>%
+  rename(Participant = Name) %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20")
+
+fullfecalsample_unaveraged<- fullfecalsample_unaveraged %>%
+   mutate(scfa_sum = Acetate_mmol_kg+Butyrate_mmol_kg+Propionate_mmol_kg) 
+
+#Making Week 1 BRMPS 2x-pH Data Frame 
+ph_brmps_wk1 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  rename(ph.wk1 = pH)
+
+#Making Week 3 BRMPS 2x-pH Data Frame 
+ph_brmps_wk3 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  rename(ph.wk3 = pH)
+
+#Combining Week 1 and Week 3 BRMPS 2x Daily Cohort 
+merged_ph_wks <- merge(ph_brmps_wk1, ph_brmps_wk3, by = "Participant") %>%
+  select(-starts_with("Week"))
+merged_ph_brmps<- merge(merged_ph_wks, participantsupps1, by = "Participant")
+merged_ph_brmps <- merged_ph_brmps %>%
+  select(starts_with("Participant"), starts_with("ph.wk")) %>%
+  mutate(ph.diff = ph.wk3 - ph.wk1) %>%
+  arrange(by_group = ph.diff)
+#Summary Statistics and Visualizations for BRMPS 2x Daily pH Change
+nrow(merged_ph_brmps) 
+t.test(as.vector(merged_ph_brmps$ph.wk1), 
+       as.vector(merged_ph_brmps$ph.wk3),
+       alternative = "greater",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(merged_ph_brmps)
+ph_brmps1x_barplot <- barplot(merged_ph_brmps$ph.diff, ylab = "Participants", 
+        xlab = "pH (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 pH Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(merged_ph_brmps)
+```
+
+#-------------------------------------------------------------------------------
+#Semester ANOVA Analyses
+##ANOVA: Week 1 Total SCFA By Semester
+```{r}
+#Reading in Fecal Sample Data-Large Set
+fullfecalsample <- read.csv("./fecalsample_a.csv") 
+participants <- read.csv("./participant.csv")
+
+#Making Table with Relevant Semester Info. Only
+participants <- participants %>%
+  filter(Data.consent == "True", Semester != "Winter2015") %>%
+  filter(Quantity.compliant == "yes" | Quantity.compliant == "none") %>%
+  rename(Participant = Name) %>%
+  select(Participant, Semester) 
+
+#Filtering for Week 1 and Merging Semester Info. by Participant
+week1sample <- fullfecalsample %>%
+  filter(Week == "week1") %>%
+  select(Participant, Week, Acetate_mmol_kg, Butyrate_mmol_kg, Propionate_mmol_kg)
+
+week1sample <- merge(participants, week1sample, by = "Participant") %>%
+  mutate(scfa_sum = rowSums(.[4:6])) %>%
+  filter(Semester != "Fall2017") %>%
+  na.omit()
+
+#Tukey Intervals to find Different Groups
+summary(aov(scfa_sum ~ Semester, data = week1sample))
+fit <- aov(scfa_sum ~ Semester, data = week1sample)
+TukeyHSD(fit)
+
+#Making Jitter Plot
+e <- ggplot(week1sample, aes(x = Semester, y = scfa_sum))
+e + geom_jitter(
+  aes(color = Semester), 
+  position = position_jitter(0.2),
+  size = 1.2
+  ) +
+  stat_summary(
+    aes(color = Semester),
+    fun.data="mean_sdl",  fun.args = list(mult=1), 
+    geom = "errorbar",  size = 0.4, color = "black"
+  ) +
+  scale_x_discrete(guide = guide_axis(n.dodge=3)) +
+  coord_cartesian(ylim=c(0,175))
+
+#Making Bargraph for scfa_sum by Semester 
+week1sample <- week1sample %>%
+  na.omit()
+
+week1sample <- aggregate(x = week1sample$scfa_sum,                
+          by = list(week1sample$Semester),          
+          FUN = mean)
+
+#Plot the bar chart 
+week1samplebarplot<- barplot(as.vector(week1sample$x),
+                             names.arg=as.vector(week1sample$Group.1), xlab="Semester",ylab="Mean Total SCFA (mmol/kg)",col="black",
+main="Average Total SCFA by Semester",border="red", las=2,cex.names=0.5)
+
+#Produce a measure of variance as well. 
+```
+
+##ANOVA: Week 1 Acetate By Semester
+```{r}
+#Reading in Fecal Sample Data-Large Set
+fullfecalsample <- read.csv("./fecalsample_a.csv") 
+participants <- read.csv("./participant.csv")
+
+#Making Table with Relevant Semester Info. Only
+participants <- participants %>%
+  filter(Data.consent == "True", Semester != "Winter2015") %>%
+  filter(Quantity.compliant == "yes" | Quantity.compliant == "none") %>%
+  rename(Participant = Name) %>%
+  select(Participant, Semester) 
+
+#Filtering for Week 1 and Merging Semester Info. by Participant
+week1sample <- fullfecalsample %>%
+  filter(Week == "week1") %>%
+  select(Participant, Week, Acetate_mmol_kg, Butyrate_mmol_kg, Propionate_mmol_kg)
+
+##Tukey Intervals to find Different Groups
+week1sample <- merge(participants, week1sample, by = "Participant") %>%
+  mutate(scfa_sum = rowSums(.[4:6])) %>%
+  filter(Semester != "Fall2017") %>%
+  na.omit()
+fit <- aov(Acetate_mmol_kg ~ Semester, data = week1sample)
+summary(fit)
+TukeyHSD(fit)
+
+#Making Jitter Plot
+e <- ggplot(week1sample, aes(x = Semester, y = Acetate_mmol_kg))
+e + geom_jitter(
+  aes(color = Semester), 
+  position = position_jitter(0.2),
+  size = 1.2
+  ) +
+  stat_summary(
+    aes(color = Semester),
+    fun.data="mean_sdl",  fun.args = list(mult=1), 
+    geom = "errorbar",  size = 0.4, color = "black"
+  ) +
+  scale_x_discrete(guide = guide_axis(n.dodge=3)) +
+  coord_cartesian(ylim=c(0,110))
+
+
+#Making Bargraph for Acetate by Semester 
+week1sample <- week1sample %>%
+  na.omit()
+
+week1sample <- aggregate(x = week1sample$Acetate_mmol_kg,                
+          by = list(week1sample$Semester),          
+          FUN = mean)
+
+#Plot the bar chart 
+week1samplebarplot<- barplot(as.vector(week1sample$x),
+                             names.arg=as.vector(week1sample$Group.1), xlab="Semester",ylab="Mean Acetate (mmol/kg)",col="black",
+main="Average Acetate by Semester",border="red", las=2,cex.names=0.5)
+```
+
+##ANOVA: Week 1 Butyrate By Semester
+```{r}
+#Reading in Fecal Sample Data-Large Set
+fullfecalsample <- read.csv("./fecalsample_a.csv") 
+participants <- read.csv("./participant.csv")
+
+#Making Table with Relevant Semester Info. Only
+participants <- participants %>%
+  filter(Data.consent == "True", Semester != "Winter2015") %>%
+  filter(Quantity.compliant == "yes" | Quantity.compliant == "none") %>%
+  rename(Participant = Name) %>%
+  select(Participant, Semester) 
+
+#Filtering for Week 1 and Merging Semester Info. by Participant
+week1sample <- fullfecalsample %>%
+  filter(Week == "week1") %>%
+  select(Participant, Week, Acetate_mmol_kg, Butyrate_mmol_kg, Propionate_mmol_kg)
+
+#Tukey Intervals to find Different Groups
+week1sample <- merge(participants, week1sample, by = "Participant") %>%
+  mutate(scfa_sum = rowSums(.[4:6])) %>%
+  filter(Semester != "Fall2017") %>%
+  na.omit()
+fit <- aov(Butyrate_mmol_kg ~ Semester, data = week1sample)
+summary(fit)
+TukeyHSD(fit)
+
+#Making Jitter Plot
+e <- ggplot(week1sample, aes(x = Semester, y = Butyrate_mmol_kg))
+e + geom_jitter(
+  aes(color = Semester), 
+  position = position_jitter(0.2),
+  size = 1.2
+  ) +
+  stat_summary(
+    aes(color = Semester),
+    fun.data="mean_sdl",  fun.args = list(mult=1), 
+    geom = "errorbar",  size = 0.4, color = "black"
+  ) +
+  scale_x_discrete(guide = guide_axis(n.dodge=3)) +
+  coord_cartesian(ylim=c(0,40))
+
+
+#Making Bargraph for Butyrate by Semester 
+week1sample <- week1sample %>%
+  na.omit()
+
+week1sample <- aggregate(x = week1sample$Butyrate_mmol_kg,                
+          by = list(week1sample$Semester),          
+          FUN = mean)
+
+#Plot the bar chart 
+week1samplebarplot<- barplot(as.vector(week1sample$x),
+                             names.arg=as.vector(week1sample$Group.1), xlab="Semester",ylab="Mean Butyrate (mmol/kg)",col="black",
+main="Average Butyrate by Semester",border="red", las=2,cex.names=0.5)
+```
+
+##ANOVA: Week 1 Propionate By Semester
+```{r}
+#Reading in Fecal Sample Data-Large Set
+fullfecalsample <- read.csv("./fecalsample_a.csv") 
+participants <- read.csv("./participant.csv")
+
+#Making Table with Relevant Semester Info. Only
+participants <- participants %>%
+  filter(Data.consent == "True", Semester != "Winter2015") %>%
+  filter(Quantity.compliant == "yes" | Quantity.compliant == "none") %>%
+  rename(Participant = Name) %>%
+  select(Participant, Semester) 
+
+#Filtering for Week 1 and Merging Semester Info. by Participant
+week1sample <- fullfecalsample %>%
+  filter(Week == "week1") %>%
+  select(Participant, Week, Acetate_mmol_kg, Butyrate_mmol_kg, Propionate_mmol_kg)
+
+#Tukey Intervals to find Different Groups
+week1sample <- merge(participants, week1sample, by = "Participant") %>%
+  mutate(scfa_sum = rowSums(.[4:6])) %>%
+  filter(Semester != "Fall2017") %>%
+  na.omit()
+fit <- aov(Propionate_mmol_kg ~ Semester, data = week1sample)
+summary(fit)
+TukeyHSD(fit)
+
+#Making Jitter Plot
+e <- ggplot(week1sample, aes(x = Semester, y = Propionate_mmol_kg))
+e + geom_jitter(
+  aes(color = Semester), 
+  position = position_jitter(0.2),
+  size = 1.2
+  ) +
+  stat_summary(
+    aes(color = Semester),
+    fun.data="mean_sdl",  fun.args = list(mult=1), 
+    geom = "errorbar",  size = 0.4, color = "black"
+  ) +
+  scale_x_discrete(guide = guide_axis(n.dodge=3)) +
+  coord_cartesian(ylim=c(0,40))
+
+
+#Making Bargraph for Propionate by Semester 
+week1sample <- week1sample %>%
+  na.omit()
+
+week1sample <- aggregate(x = week1sample$Propionate_mmol_kg,                
+          by = list(week1sample$Semester),          
+          FUN = mean)
+
+#Plot the bar chart 
+week1samplebarplot<- barplot(as.vector(week1sample$x),
+                             names.arg=as.vector(week1sample$Group.1), xlab="Semester",ylab="Mean Propionate (mmol/kg)",col="black",
+main="Average Propionate by Semester",border="red", las=2,cex.names=0.5)
+```
+
+#-------------------------------------------------------------------------------
+#BRMPS2x20 + LODAAT18/20 
+##Acetate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | 
+           Supplement.consumed == "LODAAT 2xdaily 20" | 
+           Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk1 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_acetate,participantsupps1,by="Participant") %>%
+  rename(acetate.wk3 = Acetate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diff <- acetate_brmps %>%
+  mutate(acetate_diff = acetate.wk3 - acetate.wk1) %>%
+  arrange(by = acetate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vec <- as.vector(acetate_brmps$acetate.wk1)
+acetate_wk3_vec <- as.vector(acetate_brmps$acetate.wk3)
+paired_acetate_df <- data.frame(Week1 = acetate_wk1_vec, Week3 = acetate_wk3_vec)
+acetatepairplot <- ggpaired(paired_acetate_df, cond1 = "Week1", cond2 = "Week3")
+acetatepairplot$layers <- acetatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmps$acetate.wk1), 
+       as.vector(acetate_brmps$acetate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diff)
+acetatepairplot
+acebrmps1x_barplot <- barplot(acetate_brmps_diff$acetate_diff, ylab = "Participants", xlab = "Acet. Conc. Change (Week 3 - Week 1)", 
+        main = "BRMPS 2x 20 + LODAAT 2x Daily 18/20 Acetate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diff)
+```
+
+##Acetate Proportion in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20" | Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop1 = Acetate_mmol_kg / scfa_sum) 
+
+fecal1_brmpsprop <- merge(fecal1_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk1 = acetate_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_acetateprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(acetate_prop3 = Acetate_mmol_kg / scfa_sum) 
+
+fecal3_brmpsprop <- merge(fecal3_acetateprop,participantsupps1,by="Participant") %>%
+  rename(acetate_prop_wk3 = acetate_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("acetate_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+acetate_brmpsprop <- merge(fecal1_brmpsprop,fecal3_brmpsprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+acetate_brmps_diffprop <- acetate_brmpsprop %>%
+  mutate(acetate_prop_diff = acetate_prop_wk3 - acetate_prop_wk1) %>%
+  arrange(by = acetate_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+acetate_wk1_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk1)
+acetate_wk3_vecprop <- as.vector(acetate_brmps_diffprop$acetate_prop_wk3)
+paired_acetate_dfprop <- data.frame(Week1 = acetate_wk1_vecprop, 
+                                    Week3 = acetate_wk3_vecprop)
+acetatepairplotprop <- ggpaired(paired_acetate_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+acetatepairplotprop$layers <- acetatepairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(acetate_brmpsprop$acetate_prop_wk1), 
+       as.vector(acetate_brmpsprop$acetate_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(acetate_brmps_diffprop) # p-value = 0.0971. 
+acetatepairplotprop
+aceprop1x_barplot <- barplot(acetate_brmps_diffprop$acetate_prop_diff, ylab = "Participants", xlab = "Acetate Prop. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 Ace. Prop. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(acetate_brmps_diffprop)
+```
+
+##Butyrate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+fullfecalsample <- read.csv("./fecalsample_a.csv")
+
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") 
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20" | Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk1 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("butyrate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_butyrate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Butyrate")) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_butyrate,participantsupps1,by="Participant") %>%
+  rename(butyrate.wk3 = Butyrate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("butyrate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+butyrate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round) 
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+butyrate_brmps_diff <- butyrate_brmps %>%
+  mutate(butyrate_diff = butyrate.wk3 - butyrate.wk1) %>%
+  arrange(by = butyrate_diff)
+
+butyrate_brmps_diff <- butyrate_brmps_diff[-c(86, 87, 88), ]
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+butyrate_wk1_vec <- as.vector(butyrate_brmps$butyrate.wk1)
+butyrate_wk3_vec <- as.vector(butyrate_brmps$butyrate.wk3)
+paired_butyrate_df <- data.frame(Week1 = butyrate_wk1_vec, Week3 = butyrate_wk3_vec)
+butyratepairplot <- ggpaired(paired_butyrate_df, cond1 = "Week1", cond2 = "Week3")
+butyratepairplot$layers <- butyratepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(butyrate_brmps_diff$butyrate.wk1), 
+       as.vector(butyrate_brmps_diff$butyrate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(butyrate_brmps_diff)
+butyratepairplot
+butbrmps1x_barplot <- barplot(butyrate_brmps_diff$butyrate_diff, ylab = "Participants", xlab = "Butyr. Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 Butyrate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(butyrate_brmps_diff)
+```
+
+##Propionate Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20" | Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk1 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+        starts_with("propionate"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_propionate <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Propionate")) %>%
+  filter(Week == "week3") %>%
+  na.omit()
+
+fecal3_brmps <- merge(fecal3_propionate,participantsupps1,by="Participant") %>%
+  rename(propionate.wk3 = Propionate_mmol_kg) %>%
+  select(starts_with("Participant"),
+         starts_with("propionate"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+propionate_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+propionate_brmps_diff <- propionate_brmps %>%
+  mutate(propionate_diff = propionate.wk3 - propionate.wk1) %>%
+  arrange(by = propionate_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+propionate_wk1_vec <- as.vector(propionate_brmps$propionate.wk1)
+propionate_wk3_vec <- as.vector(propionate_brmps$propionate.wk3)
+paired_propionate_df <- data.frame(Week1 = propionate_wk1_vec, Week3 = propionate_wk3_vec)
+propionatepairplot <- ggpaired(paired_propionate_df, cond1 = "Week1", cond2 = "Week3")
+propionatepairplot$layers <- propionatepairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(propionate_brmps$propionate.wk1), 
+       as.vector(propionate_brmps$propionate.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(propionate_brmps_diff)
+propionatepairplot
+probrmps1x_barplot <- barplot(propionate_brmps_diff$propionate_diff, ylab = "Participants", xlab = "Propio. Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 Propionate Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(propionate_brmps_diff)
+```
+##Prop+But Proportion (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20" | Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_bpprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(bp_prop1 = (Butyrate_mmol_kg+Propionate_mmol_kg) / scfa_sum) 
+#View(fullfecalsample)
+
+fecal1_brmpsprop <- merge(fecal1_bpprop,participantsupps1,by="Participant") %>%
+  rename(bp_prop_wk1 = bp_prop1) %>%
+  select(starts_with("Participant"),
+         starts_with("bp_prop_wk1"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_bpprop <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate"))%>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  mutate(bp_prop3 = (Butyrate_mmol_kg+Propionate_mmol_kg) / scfa_sum) 
+
+fecal3_brmpsprop <- merge(fecal3_bpprop,participantsupps1,by="Participant") %>%
+  rename(bp_prop_wk3 = bp_prop3) %>%
+  select(starts_with("Participant"),
+         starts_with("bp_prop_wk3"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+bp_brmpsprop <- merge(fecal1_brmpsprop,fecal3_brmpsprop,
+                           by="Participant") %>%
+                     select(-ends_with("x"), -ends_with("y"))
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+bp_brmps_diffprop <- bp_brmpsprop %>%
+  mutate(bp_prop_diff = bp_prop_wk3 - bp_prop_wk1) %>%
+  arrange(by = bp_prop_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+bp_wk1_vecprop <- as.vector(bp_brmps_diffprop$bp_prop_wk1)
+bp_wk3_vecprop <- as.vector(bp_brmps_diffprop$bp_prop_wk3)
+paired_bp_dfprop <- data.frame(Week1 = bp_wk1_vecprop, 
+                                    Week3 = bp_wk3_vecprop)
+bppairplotprop <- ggpaired(paired_bp_dfprop, cond1 = "Week1", 
+                                cond2 = "Week3")
+bppairplotprop$layers <- bppairplotprop$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(bp_brmpsprop$bp_prop_wk1), 
+       as.vector(bp_brmpsprop$bp_prop_wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(bp_brmps_diffprop) # p-value = 0.0971. 
+bppairplotprop
+bpprop1x_barplot <- barplot(bp_brmps_diffprop$bp_prop_diff, ylab = "Participants", xlab = "BP Prop. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 BP. Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(bp_brmps_diffprop)
+```
+
+##Total SCFA Concentration in Week 1 vs. Week 3 (Participants Averaged)
+```{r}
+#Making and Cleaning data frame with Participants by Supplement
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015")
+
+#Filtering for Quality Compliance and Twice-Daily BRMPS Participants
+participantsupps1 <- participantsupps1 %>%
+  select(-starts_with("Data.consent")) %>%
+  filter(Quantity.compliant == "yes") %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20" | Supplement.consumed == "BRMPS 2xdaily 20") %>%
+  rename(Participant = Name)
+
+#Making Week 1 Data Frame from BRMPS and Acetate
+fecal1_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week1") %>%
+  na.omit() 
+
+fecal1_brmps <- merge(fecal1_total,participantsupps1,by="Participant") %>%
+  rename(total.wk1 = scfa_sum) %>%
+  select(starts_with("Participant"),
+        starts_with("total"))
+
+#Making Week 3 Data Frame from BRMPS and Acetate
+fecal3_total <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("Acetate"),
+         starts_with("Butyrate"),
+         starts_with("Propionate")) %>%
+  mutate(scfa_sum = rowSums(.[3:5])) %>%
+  filter(Week == "week3") %>%
+  na.omit() 
+
+fecal3_brmps <- merge(fecal3_total,participantsupps1,by="Participant") %>%
+  rename(total.wk3 = scfa_sum) %>%
+  select(starts_with("Participant"),
+         starts_with("total"))
+
+#Combining Week 1 and Week 3 BRMPS-Acetate DFs for Larger DF
+total_brmps <- merge(fecal1_brmps,fecal3_brmps,by="Participant") %>%
+  mutate_if(is.numeric,round)
+
+#Appending Differences column to acetate-BRMPS df in form: week3-week1
+total_brmps_diff <- total_brmps %>%
+  mutate(total_diff = total.wk3 - total.wk1) %>%
+  arrange(by = total_diff)
+
+#Creating Paired Boxplot for Week 1 vs Week 3 BRMPS-Acetate Data
+total_wk1_vec <- as.vector(total_brmps$total.wk1)
+total_wk3_vec <- as.vector(total_brmps$total.wk3)
+paired_total_df <- data.frame(Week1 = total_wk1_vec, Week3 = total_wk3_vec)
+totalpairplot <- ggpaired(paired_total_df, cond1 = "Week1", cond2 = "Week3")
+totalpairplot$layers <- totalpairplot$layers[-2]
+
+#Summary Statistics and Graphics for Week 1 vs. Week 3 BRMPS-Acetate
+##t-test means (wk1-wk3) difference
+t.test(as.vector(total_brmps$total.wk1), 
+       as.vector(total_brmps$total.wk3),
+       alternative = "less",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(total_brmps_diff)
+totalpairplot
+totbrmps1x_barplot <- barplot(total_brmps_diff$total_diff, ylab = "Participants", xlab = "Total Conc. Change (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 and BRMPS 2x Total Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+nrow(total_brmps_diff)
+```
+
+##pH Change in BRMPS 2x Cohort from Week 1 to Week 3
+```{r}
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") %>%
+  rename(Participant = Name) %>%
+  filter(Supplement.consumed == "LODAAT 2xdaily 18" | Supplement.consumed == "LODAAT 2xdaily 20" | Supplement.consumed == "BRMPS 2xdaily 20")
+
+fullfecalsample_unaveraged<- fullfecalsample_unaveraged %>%
+   mutate(scfa_sum = Acetate_mmol_kg+Butyrate_mmol_kg+Propionate_mmol_kg) 
+
+#Making Week 1 BRMPS 2x-pH Data Frame 
+ph_brmps_wk1 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week1") %>%
+  na.omit() %>%
+  rename(ph.wk1 = pH)
+
+#Making Week 3 BRMPS 2x-pH Data Frame 
+ph_brmps_wk3 <- fullfecalsample %>%
+  select(starts_with("Participant"),
+         starts_with("Week"),
+         starts_with("pH")) %>%
+  filter(Week == "week3") %>%
+  na.omit() %>%
+  rename(ph.wk3 = pH)
+
+#Combining Week 1 and Week 3 BRMPS 2x Daily Cohort 
+merged_ph_wks <- merge(ph_brmps_wk1, ph_brmps_wk3, by = "Participant") %>%
+  select(-starts_with("Week"))
+merged_ph_brmps<- merge(merged_ph_wks, participantsupps1, by = "Participant")
+merged_ph_brmps <- merged_ph_brmps %>%
+  select(starts_with("Participant"), starts_with("ph.wk")) %>%
+  mutate(ph.diff = ph.wk3 - ph.wk1) %>%
+  arrange(by_group = ph.diff)
+#Summary Statistics and Visualizations for BRMPS 2x Daily pH Change
+nrow(merged_ph_brmps) 
+t.test(as.vector(merged_ph_brmps$ph.wk1), 
+       as.vector(merged_ph_brmps$ph.wk3),
+       alternative = "greater",
+       paired = TRUE,
+       conf.level = 0.95)
+summary(merged_ph_brmps)
+ph_brmps1x_barplot <- barplot(merged_ph_brmps$ph.diff, ylab = "Participants", 
+        xlab = "pH (Week 3 - Week 1)", 
+        main = "LODAAT 2x Daily 18/20 + BRMPS 2x 20 pH Change from Week 1 to Week 3", 
+        horiz =  TRUE)
+```
+#-------------------------------------------------------------------------------
+#SCFA Change vs. pH Change 
+```{r}
+participantsupps1 <- read.csv("./participant.csv") %>%
+  filter(Semester != "Winter2015") %>%
+  rename(Participant = Name) %>%
+  filter(Quantity.compliant == "yes" | Quantity.compliant == "none") %>%
+  select(Participant, Supplement.consumed) %>%
+  na.omit()
+
+#Isolating Week 1 Data
+week1 <- fullfecalsample %>%
+  filter(Week == "week1") %>%
+  select(Participant, Week, pH, Acetate_mmol_kg, Butyrate_mmol_kg, 
+         Propionate_mmol_kg) %>%
+  mutate(scfa_sum = rowSums(.[4:6])) %>%
+  na.omit()
+
+#Isolating Week 3 Data 
+week3 <- fullfecalsample %>%
+  filter(Week == "week3") %>%
+  select(Participant, Week, pH, Acetate_mmol_kg, Butyrate_mmol_kg, 
+         Propionate_mmol_kg) %>%
+  mutate(scfa_sum = rowSums(.[4:6])) %>%
+  na.omit()
+
+#Merging Week 1 and Week 3 Data and Finding pH and SCFA Differences 
+allweeks <- merge(week1, week3, by = "Participant") %>%
+  rename(ph.week1 = pH.x, ph.week3 = pH.y, scfa_sum.wk1 = scfa_sum.x,
+         scfa_sum.wk3 = scfa_sum.y) %>%
+  select(Participant, ph.week1, scfa_sum.wk1, ph.week3, scfa_sum.wk3) %>%
+  mutate(ph_change = ph.week3 - ph.week1, 
+         scfa_change = scfa_sum.wk3 - scfa_sum.wk1) 
+
+allweeks <- merge(allweeks, participantsupps1, by = "Participant")
+
+allweeks$supplement[allweeks$Supplement.consumed == "BRMPS 1xdaily 40" | allweeks$Supplement.consumed == "LODAAT 1xdaily 20"] = "RPS Once Daily"
+
+allweeks$supplement[allweeks$Supplement.consumed == "BRMPS2xdaily 40" | allweeks$Supplement.consumed == "LODAAT 2xdaily 20" | 
+allweeks$Supplement.consumed == "BRMPS 2xdaily 20" |
+allweeks$Supplement.consumed == "LODAAT 2xdaily 18" |
+allweeks$Supplement.consumed == "LODAAT 2xdaily 9"] = "RPS Twice Daily"
+
+allweeks$supplement[allweeks$Supplement.consumed == "Oat 2xdaily 20" | allweeks$Supplement.consumed == "Rice 2xdaily 20"] = "Other"
+
+allweeks$supplement[allweeks$Supplement.consumed == "none"] = "None"
+
+allweeks <- allweeks %>%
+  filter(Supplement.consumed != "transition_HiMaize 2xdaily 20",
+         Supplement.consumed != "HiMaize+BRMPS 1xdaily 40")
+
+#allweeks <- allweeks %>%
+ # filter(supplement == "RPS Twice Daily")
+
+#Creating Scatterplot for SCFA Change vs. PH Change
+ggplot(allweeks, aes(x=scfa_change, y=ph_change)) +
+  geom_point(alpha=0.3) +
+  ggtitle("pH Change vs. SCFA Change") +
+  labs(y= "pH Change (Wk3-Wk1)", x = "SCFA Change (Wk3-Wk1)") +
+  theme(axis.text.x  = element_text(angle=0, hjust=0.5, size=11,colour
+                                    ="black")) +
+  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_y_continuous(breaks= pretty_breaks()) +
+  theme_bw() 
+
+nrow(allweeks)
+
+unique(allweeks$Supplement.consumed)
+
+cor.test(as.vector(allweeks$scfa_change), as.vector(allweeks$ph_change), 
+         alternative = "less", method = 'pearson') #cor = -0.122232 
+
+#Scatterplot colored by Supplement
+qplot(scfa_change, ph_change, data = allweeks, colour = supplement)
+qplot(ph_change, scfa_change, data = allweeks, colour = supplement)
+```
+
+
