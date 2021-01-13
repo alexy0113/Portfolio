@@ -1,0 +1,74 @@
+---
+title: "Microbiome_Analysis"
+author: "Alex Yang"
+date: "12/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(caret)
+library(dplyr)
+library(rattle)
+```
+
+```{r}
+#Reading in file
+microbiome_nationality <- read.csv("./Desktop/microbiome_nationality.csv")
+
+#Applying nearZeroVar
+nearZeroVar(microbiome_nationality, 90/10, names = TRUE)
+
+#Selecting out nearZeroVar() columns
+microbiome_nationality_nzvremoved <- microbiome_nationality %>%
+  select(-starts_with("Aerococcus"), -starts_with("Aeromonas"),
+         -starts_with("Anaerobiospirillum"), -starts_with("Anaerofustis"),
+         -starts_with("Aneurinibacillus"), -starts_with("Aquabacterium"),
+         -starts_with("Asteroleplasma.et.rel."), 
+         -starts_with("Clostridium.felsineum.et.rel."),
+         -starts_with("Clostridium.thermocellum.et.rel." ),
+         -starts_with("Gemella"), -starts_with("Granulicatella"), 
+         -starts_with("Leminorella"), -starts_with("Methylobacterium"),
+         -starts_with("Micrococcaceae"), -starts_with("Novosphingobium"),
+         -starts_with("Peptostreptococcus.anaerobius.et.rel."),
+         -starts_with("Serratia"), -starts_with("Uncultured.Chroococcales"),
+         -starts_with("Uncultured.Selenomonadaceae"), 
+         -starts_with("Wissella.et.rel."))
+
+#Finding median for all microbes and Selecting out by median
+nationality <- microbiome_nationality_nzvremoved$nationality
+microbiome_temp <- microbiome_nationality_nzvremoved %>%
+  select(-starts_with("nationality"))
+medians <- data.frame(apply(microbiome_temp, 2, median)) %>%
+  rename(median = apply.microbiome_temp..2..median.)
+microbiome_temp_nt <- rbind(t(medians),microbiome_temp)
+microbiome_temp_t <- data.frame(t(microbiome_temp_nt)) %>%
+  filter(median > 10 | median == 10)
+
+microbiome_nationality_nzvremoved_median10up <- data.frame(t(microbiome_temp_t)) 
+microbiome_nationality_nzvremoved_median10up = 
+  microbiome_nationality_nzvremoved_median10up[-1,]
+microbiome_nationality_nzvremoved_median10up = cbind(nationality, microbiome_nationality_nzvremoved_median10up)
+
+#Creating Data Partitions and Training Models 
+training_rows <- createDataPartition(
+  microbiome_nationality_nzvremoved_median10up$nationality, p = .7, list = FALSE)
+microbiome_train <- microbiome_nationality_nzvremoved_median10up[training_rows,]
+microbiome_test <- microbiome_nationality_nzvremoved_median10up[-training_rows,]
+
+#Training random forest model to predict nationality variable 
+model<-train(nationality~., preProcess = c("center", "scale"),
+             data=microbiome_nationality_nzvremoved_median10up, 
+             method='rf')
+
+#Using Model to make predictions on test data
+model_predictions <- predict(model, microbiome_test)
+
+#Generating Confusion Matrix
+confusionMatrix(as.factor(microbiome_test$nationality), 
+                as.factor(model_predictions))
+
+#Examination of Variable Importance 
+varImp(model)
+```
+
