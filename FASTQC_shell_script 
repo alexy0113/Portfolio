@@ -1,9 +1,0 @@
-#!/bin/sh
-
-#Problem Set 1 Shell Script
-
-sed '1,4d' PS1.fastq > PS1_fixed.fastq
-fastqc PS1_fixed.fastq 
-unzip PS1_fixed_fastqc.zip
-cd PS1_fixed_fastqc
-cut -f3 summary.txt | grep -e 'FAIL' > failed_tests.txt
